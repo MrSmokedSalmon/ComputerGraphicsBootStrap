@@ -28,7 +28,7 @@ void Mesh::InitialiseQuad()
 
 	// Define the 6 vertices for our two triangles to make a quad,
 	// in a counter-clockwise direction
-	Vertex vertices[6];
+	Vertex vertices[18];
 	vertices[0].position = { -0.5f, 0, 0.5f, 1.f };
 	vertices[1].position = { 0.5f, 0, 0.5f, 1.f };
 	vertices[2].position = { -0.5f, 0, -0.5f, 1.f };
@@ -50,7 +50,7 @@ void Mesh::InitialiseQuad()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	// This is a quad made up of two triangles
-	m_triCount = 2;
+	m_triCount = 4;
 }
 
 void Mesh::Draw()

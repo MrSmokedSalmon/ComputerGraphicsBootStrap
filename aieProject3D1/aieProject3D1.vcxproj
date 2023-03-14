@@ -168,12 +168,21 @@
     <ClCompile Include="aieProject3D1App.cpp" />
     <ClCompile Include="AstralBody.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="OBJMesh.cpp" />
+    <ClCompile Include="RenderTarget.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Space.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aieProject3D1App.h" />
     <ClInclude Include="AstralBody.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="OBJMesh.h" />
+    <ClInclude Include="RenderTarget.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="Space.h" />
+    <ClInclude Include="tiny_obj_loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
