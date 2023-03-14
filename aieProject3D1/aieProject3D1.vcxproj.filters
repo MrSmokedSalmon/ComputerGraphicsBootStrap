@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Header Files\Provided">
+      <UniqueIdentifier>{5b7764f8-e35f-418e-bc20-2844344faadc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Provided">
+      <UniqueIdentifier>{f4e96111-7fa6-4b2b-ae4d-ea28434b4135}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Space">
+      <UniqueIdentifier>{4e2b00ac-2190-4ef1-b575-0d4940ad9992}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Space">
+      <UniqueIdentifier>{1814c0e4-7704-41c9-9d52-315a195892c0}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="aieProject3D1App.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AstralBody.cpp">
+      <Filter>Source Files\Space</Filter>
+    </ClCompile>
+    <ClCompile Include="Space.cpp">
+      <Filter>Source Files\Space</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="aieProject3D1App.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AstralBody.h">
+      <Filter>Header Files\Space</Filter>
+    </ClInclude>
+    <ClInclude Include="Space.h">
+      <Filter>Header Files\Space</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
