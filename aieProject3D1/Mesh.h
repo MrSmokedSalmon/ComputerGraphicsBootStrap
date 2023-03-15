@@ -17,7 +17,8 @@ public:
 
 	void InitialiseQuad();
 	void InitialiseFullscreenQuad(); // For Post Processing
-	void Initialise(); // For Implementing a Primitive
+	void Initialise(unsigned int vertCount, const Vertex* vertices, 
+		unsigned int indexCount = 0, unsigned int* indices = nullptr); // For Implementing a Primitive
 	virtual void Draw();
 
 protected:

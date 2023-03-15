@@ -1,8 +1,10 @@
 #include "aieProject3D1App.h"
 #include "Gizmos.h"
 #include "Input.h"
+
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
+#include <imgui.h>
 
 using glm::vec3;
 using glm::vec4;
@@ -27,6 +29,9 @@ bool aieProject3D1App::startup() {
 	// create simple camera transforms
 	m_viewMatrix = glm::lookAt(vec3(10), vec3(0), vec3(0, 1, 0));
 	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, 16.0f / 9.0f, 0.1f, 1000.0f);
+
+	m_light.color = { 1, 1, 0 };
+	m_ambientLight = { 0.5f, 0.5f, 0.5f };
 
 	//space = new Space();
 
@@ -65,8 +70,13 @@ void aieProject3D1App::update(float deltaTime) {
 	// quit if we press escape
 	aie::Input* input = aie::Input::getInstance();
 
+	// Rotate the light to emulate a 'day/night' cycle
+	m_light.direction = glm::normalize(glm::vec3(glm::cos(time * 2), glm::sin(time * 2), 0));
+
 	if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))
 		quit();
+
+	ImGUIRefresher();
 }
 
 void aieProject3D1App::draw() {
@@ -79,25 +89,44 @@ void aieProject3D1App::draw() {
 	// update perspective based on screen size
 	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, 
 		getWindowWidth() / (float)getWindowHeight(), 0.1f, 1000.0f);
+	auto pv = m_projectionMatrix * m_viewMatrix;
 
-#pragma region SimpleShader
-	// Bind the shader
-	m_simpleShader.bind();
+	float time = getTime();
 
-	// Bind the transform
-	auto pvm = m_projectionMatrix * m_viewMatrix * m_quadTransform;
-	m_simpleShader.bindUniform("ProjectionViewModel", pvm);
-
-	// Draw the quad using Mesh's draw
-	m_quadMesh.Draw();
-
-#pragma endregion
-
+	QuadDraw(pv * m_quadTransform);
+	//BunnyDraw(pv * m_bunnyTransform, time);
+	PhongDraw(pv * m_bunnyTransform, m_bunnyTransform);
 
 	Gizmos::draw(m_projectionMatrix * m_viewMatrix);
 }
 
 bool aieProject3D1App::LaunchShaders()
+{
+	if (!QuadLoader())
+		return false;
+
+	//if (!BunnyLoader())
+	//	return false;
+
+	if (!PhongLoader())
+		return false;
+
+	return true;
+}
+
+void aieProject3D1App::ImGUIRefresher()
+{
+	ImGui::Begin("Light Settings");
+	ImGui::DragFloat3("Global Light Direction",
+		&m_light.direction[0], 0.1, 0, 1);
+	ImGui::DragFloat3("Global Light Color", 
+		&m_light.color[0], 0.1, 0, 1);
+	ImGui::DragFloat3("Ambient Light Color", 
+		&m_ambientLight[0], 0.1, 0, 1);
+	ImGui::End();
+}
+
+bool aieProject3D1App::QuadLoader()
 {
 	m_simpleShader.loadShader(aie::eShaderStage::VERTEX,
 		"./shaders/simple.vert");
@@ -110,7 +139,16 @@ bool aieProject3D1App::LaunchShaders()
 		return false;
 	}
 
-	m_quadMesh.InitialiseQuad();
+	// Defined as 4 vertices for the 2 triangles
+	Mesh::Vertex vertices[4];
+	vertices[0].position = { -0.5f, 0, 0.5f, 1 };
+	vertices[1].position = { 0.5f, 0, 0.5f, 1 };
+	vertices[2].position = { -0.5f, 0, -0.5f, 1 };
+	vertices[3].position = { 0.5f, 0, -0.5f, 1 };
+
+	unsigned int indices[6] = { 0,1,2,2,1,3 };
+
+	m_quadMesh.Initialise(4, vertices, 6, indices);
 
 	// This is a 'unit' wide quad
 	m_quadTransform = {
@@ -119,6 +157,123 @@ bool aieProject3D1App::LaunchShaders()
 		0, 0, 10, 0,
 		0, 0, 0, 1
 	};
-	
+
 	return true;
+}
+
+bool aieProject3D1App::BunnyLoader()
+{
+	m_colorShader.loadShader(aie::eShaderStage::VERTEX,
+		"./shaders/color.vert");
+	m_colorShader.loadShader(aie::eShaderStage::FRAGMENT,
+		"./shaders/color.frag");
+
+	if (m_colorShader.link() == false)
+	{
+		printf("Color Shader Error: %s\n", m_colorShader.getLastError());
+		return false;
+	}
+
+	if (m_bunnyMesh.load("./stanford/Bunny.obj") == false)
+	{
+		printf("Bunny Mesh Error:\n");
+		return false;
+	}
+
+	m_bunnyTransform = {
+		0.6f,0,0,0,
+		0,0.6f,0,0,
+		0,0,0.6f,0,
+		0, 0, 0, 1
+	};
+
+	return true;
+}
+
+bool aieProject3D1App::PhongLoader()
+{
+	m_phongShader.loadShader(aie::eShaderStage::VERTEX,
+		"./shaders/phong.vert");
+	m_phongShader.loadShader(aie::eShaderStage::FRAGMENT,
+		"./shaders/phong.frag");
+
+	if (m_phongShader.link() == false)
+	{
+		printf("Phong Shader Error: %s\n", m_phongShader.getLastError());
+		return false;
+	}
+
+	if (m_bunnyMesh.load("./stanford/Bunny.obj") == false)
+	{
+		printf("Bunny Mesh Error:\n");
+		return false;
+	}
+
+	m_bunnyTransform = {
+		0.6f,0,0,0,
+		0,0.6f,0,0,
+		0,0,0.6f,0,
+		0, 0, 0, 1
+	};
+
+	return true;
+}
+
+void aieProject3D1App::QuadDraw(glm::mat4 pvm)
+{
+	// Bind the shader
+	m_simpleShader.bind();
+
+	// Bind the transform
+	m_simpleShader.bindUniform("ProjectionViewModel", pvm);
+
+	// Draw the quad using Mesh's draw
+	m_quadMesh.Draw();
+}
+
+void aieProject3D1App::BunnyDraw(glm::mat4 pvm, float time)
+{
+	// Bind the shader
+	m_colorShader.bind();
+
+	// Bind the transform
+	m_colorShader.bindUniform("ProjectionViewModel", pvm);
+
+	// Bind the base color
+	glm::vec4 baseColor = { 0, 1, 0, 1 };
+	m_colorShader.bindUniform("BaseColor", baseColor);
+
+	// Bind the time
+	m_colorShader.bindUniform("Time", time);
+
+	// Draw the quad using Mesh's draw
+	m_bunnyMesh.draw();
+}
+
+void aieProject3D1App::PhongDraw(glm::mat4 pvm, glm::mat4 transform)
+{
+	// Bind the shader
+	m_phongShader.bind();
+
+	// Bind the camera position
+	m_phongShader.bindUniform("CameraPosition",
+		glm::vec3(glm::inverse(m_viewMatrix)[3]));
+
+	// Bind the transform
+	m_phongShader.bindUniform("ProjectionViewModel", pvm);
+
+	// Bind the light direction
+	m_phongShader.bindUniform("LightDirection", m_light.direction);
+
+	// Bind the light colours
+	m_phongShader.bindUniform("AmbientColor", m_ambientLight);
+	m_phongShader.bindUniform("LightColor", m_light.color);
+
+	// Bind the model matrix
+	m_phongShader.bindUniform("ModelMatrix", transform);
+
+	
+
+	// Draw the quad using Mesh's draw
+	m_bunnyMesh.draw();
 }

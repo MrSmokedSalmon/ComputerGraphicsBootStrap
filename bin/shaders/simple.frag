@@ -2,7 +2,11 @@
 #version 410
 
 out vec4 FragColor;
+layout(location = 4) in vec4 gl_FragCoord;
 
 void main(){
-    FragColor = vec4( 1, 0, 1, 1);
+    float x = gl_FragCoord.x;
+    float y = gl_FragCoord.y;
+
+    FragColor = vec4( x, 0, y, 1);
 }
