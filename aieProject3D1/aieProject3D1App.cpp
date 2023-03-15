@@ -34,6 +34,12 @@ bool aieProject3D1App::startup() {
 	m_light.intensity = 1;
 	m_ambientLight = { 0.5f, 0.5f, 0.5f };
 
+
+	//https://learnopengl.com/Lighting/Multiple-lights
+	pointLights = new PointLight[4]{
+		
+	};
+
 	//space = new Space();
 
 	return LaunchShaders();
@@ -121,11 +127,11 @@ void aieProject3D1App::ImGUIRefresher()
 	ImGui::DragFloat3("Global Light Direction",
 		&m_light.direction[0], 0.1, 0, 1);
 	ImGui::DragFloat3("Global Light Color", 
-		&m_light.color[0], 0.1, 0, 1);
+		&m_light.color[0], 1, 0, 255);
 	ImGui::DragFloat("Light Intensity",
 		&m_light.intensity, 0.1, 1, 100);
 	ImGui::DragFloat3("Ambient Light Color", 
-		&m_ambientLight[0], 0.1, 0, 1);
+		&m_ambientLight[0], 1, 0, 255);
 	ImGui::End();
 
 	ImGui::Begin("Material Settings");
@@ -276,8 +282,8 @@ void aieProject3D1App::PhongDraw(glm::mat4 pvm, glm::mat4 transform)
 
 	// Bind the lights
 	m_phongShader.bindUniform("LightDirection", m_light.direction);
-	m_phongShader.bindUniform("LightColor", m_light.color);
-	m_phongShader.bindUniform("AmbientColor", m_ambientLight);
+	m_phongShader.bindUniform("LightColor", m_light.color / 255.f);
+	m_phongShader.bindUniform("AmbientColor", m_ambientLight / 255.f);
 
 	// Bind the material settings
 	m_phongShader.bindUniform("Ka", v_ambient / 255.f);

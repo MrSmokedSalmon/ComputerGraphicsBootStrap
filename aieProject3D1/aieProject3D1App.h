@@ -54,9 +54,23 @@ protected:
 		glm::vec3 color;
 		float intensity;
 	};
+	struct PointLight {
+		glm::vec3 Position;
+
+		float constant;
+		float linear;
+		float quadratic;
+
+		glm::vec3 ambient;
+		glm::vec3 diffuse;
+		glm::vec3 specular;
+	};
 
 	Light m_light;
+	Light m_pointLight;
 	glm::vec3 m_ambientLight;
+
+	PointLight pointLights[4];
 
 	glm::vec3 v_ambient = glm::vec3(0.2f);
 	glm::vec3 v_diffuse = glm::vec3(1.f);
