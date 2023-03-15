@@ -1,3 +1,5 @@
+#define NR_POINT_LIGHTS 4
+
 #include "aieProject3D1App.h"
 #include "Gizmos.h"
 #include "Input.h"
@@ -5,11 +7,13 @@
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
 #include <imgui.h>
+#include <string>
 
 using glm::vec3;
 using glm::vec4;
 using glm::mat4;
 using aie::Gizmos;
+//using namespace std;
 
 aieProject3D1App::aieProject3D1App() {
 	
@@ -36,10 +40,13 @@ bool aieProject3D1App::startup() {
 
 
 	//https://learnopengl.com/Lighting/Multiple-lights
-	pointLights = new PointLight[4]{
-		
-	};
-
+	for (int i = 0; i < NR_POINT_LIGHTS; i++)
+	{
+		PointLight* newPL = new PointLight();
+		newPL->position = glm::vec3(0);
+		pointLights[i] = newPL;
+	}
+	
 	//space = new Space();
 
 	return LaunchShaders();
@@ -143,6 +150,36 @@ void aieProject3D1App::ImGUIRefresher()
 		&v_specular[0], 1, 0, 255);
 	ImGui::DragFloat("Specular Strength",
 		&v_specularStrength, 0.1, 1, 100);
+	ImGui::End();
+
+	for (int i = 0; i < NR_POINT_LIGHTS; i++)
+	{
+		ImGUIPointLight(i);
+	}
+}
+
+void aieProject3D1App::ImGUIPointLight(int number)
+{
+	std::string title = "Point Light";
+	title += std::to_string(number);
+
+	PointLight pl = *pointLights[number];
+
+	ImGui::Begin(title.c_str());
+	ImGui::DragFloat3("Position",
+		&(pl.position[0]), 0.1f);
+	ImGui::DragFloat3("Ambient",
+		&(pl.ambient[0]), 1, 0, 255);
+	ImGui::DragFloat3("Diffuse",
+		&(pl.diffuse[0]), 1, 0, 255);
+	ImGui::DragFloat3("Specular",
+		&(pl.specular[0]), 1, 0, 255);
+	ImGui::DragFloat("Constant",
+		&(pl.constant), 0.1);
+	ImGui::DragFloat("Linear",
+		&(pl.linear), 0.1);
+	ImGui::DragFloat("Quadratic",
+		&(pl.quadratic), 0.1);
 	ImGui::End();
 }
 
@@ -283,7 +320,8 @@ void aieProject3D1App::PhongDraw(glm::mat4 pvm, glm::mat4 transform)
 	// Bind the lights
 	m_phongShader.bindUniform("LightDirection", m_light.direction);
 	m_phongShader.bindUniform("LightColor", m_light.color / 255.f);
-	m_phongShader.bindUniform("AmbientColor", m_ambientLight / 255.f);
+	m_phongShader.bindUniform("AmbientColor", m_ambientLight / 255.f	);
+
 
 	// Bind the material settings
 	m_phongShader.bindUniform("Ka", v_ambient / 255.f);
@@ -297,6 +335,26 @@ void aieProject3D1App::PhongDraw(glm::mat4 pvm, glm::mat4 transform)
 	// Bind the model matrix
 	m_phongShader.bindUniform("ModelMatrix", transform);
 	
+	// Bind the point lights
+	glm::mat4 encodedPoints[NR_POINT_LIGHTS];
+	for (int i = 0; i < NR_POINT_LIGHTS; i++)
+	{
+		encodedPoints[i] = PointToMatEncode(*pointLights[i]);
+	}
+	m_phongShader.bindUniform("encodedPL", *encodedPoints);
+
 	// Draw the quad using Mesh's draw
 	m_bunnyMesh.draw();
+}
+
+glm::mat4 aieProject3D1App::PointToMatEncode(PointLight& light)
+{
+	glm::mat4 encodePoint;
+
+	encodePoint[0] = *(new glm::vec4(light.position, light.constant));
+	encodePoint[1] = *(new glm::vec4(light.ambient, light.linear));
+	encodePoint[2] = *(new glm::vec4(light.diffuse, light.quadratic));
+	encodePoint[3] = *(new glm::vec4(light.specular, 0));
+
+	return encodePoint;
 }

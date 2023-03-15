@@ -6,10 +6,9 @@
 #include "Space.h"
 #include "OBJMesh.h"
 
-
 #include <glm/mat4x4.hpp>
 
-class aieProject3D1App : public aie::Application {
+class aieProject3D1App : public aie::Application{
 public:
 
 	aieProject3D1App();
@@ -23,7 +22,6 @@ public:
 
 protected:
 	bool LaunchShaders();
-	void ImGUIRefresher();
 
 	bool QuadLoader();
 	bool BunnyLoader();
@@ -33,7 +31,10 @@ protected:
 	void BunnyDraw(glm::mat4 pvm, float time);
 	void PhongDraw(glm::mat4 pvm, glm::mat4 transform);
 
-	Space* space;
+	void ImGUIRefresher();
+	void ImGUIPointLight(int number);
+
+	//Space* space;
 
 	// camera transforms
 	glm::mat4	m_viewMatrix;
@@ -55,7 +56,7 @@ protected:
 		float intensity;
 	};
 	struct PointLight {
-		glm::vec3 Position;
+		glm::vec3 position;
 
 		float constant;
 		float linear;
@@ -70,10 +71,12 @@ protected:
 	Light m_pointLight;
 	glm::vec3 m_ambientLight;
 
-	PointLight pointLights[4];
+	PointLight* pointLights[4];
 
 	glm::vec3 v_ambient = glm::vec3(0.2f);
 	glm::vec3 v_diffuse = glm::vec3(1.f);
 	glm::vec3 v_specular = glm::vec3(0.8f);
 	float v_specularStrength = 320.f;
+
+	glm::mat4 PointToMatEncode(PointLight& light);
 };
