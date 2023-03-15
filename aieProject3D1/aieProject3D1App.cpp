@@ -31,6 +31,7 @@ bool aieProject3D1App::startup() {
 	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, 16.0f / 9.0f, 0.1f, 1000.0f);
 
 	m_light.color = { 1, 1, 0 };
+	m_light.intensity = 1;
 	m_ambientLight = { 0.5f, 0.5f, 0.5f };
 
 	//space = new Space();
@@ -79,8 +80,8 @@ void aieProject3D1App::update(float deltaTime) {
 	ImGUIRefresher();
 }
 
-void aieProject3D1App::draw() {
-
+void aieProject3D1App::draw() 
+{
 	// wipe the screen to the background colour
 	clearScreen();
 
@@ -121,8 +122,21 @@ void aieProject3D1App::ImGUIRefresher()
 		&m_light.direction[0], 0.1, 0, 1);
 	ImGui::DragFloat3("Global Light Color", 
 		&m_light.color[0], 0.1, 0, 1);
+	ImGui::DragFloat("Light Intensity",
+		&m_light.intensity, 0.1, 1, 100);
 	ImGui::DragFloat3("Ambient Light Color", 
 		&m_ambientLight[0], 0.1, 0, 1);
+	ImGui::End();
+
+	ImGui::Begin("Material Settings");
+	ImGui::DragFloat3("Ambient Colour",
+		&v_ambient[0], 1, 0, 255);
+	ImGui::DragFloat3("Diffuse Colour",
+		&v_diffuse[0], 1, 0, 255);
+	ImGui::DragFloat3("Specular Colour",
+		&v_specular[0], 1, 0, 255);
+	ImGui::DragFloat("Specular Strength",
+		&v_specularStrength, 0.1, 1, 100);
 	ImGui::End();
 }
 
@@ -179,6 +193,7 @@ bool aieProject3D1App::BunnyLoader()
 		printf("Bunny Mesh Error:\n");
 		return false;
 	}
+
 
 	m_bunnyTransform = {
 		0.6f,0,0,0,
@@ -259,21 +274,23 @@ void aieProject3D1App::PhongDraw(glm::mat4 pvm, glm::mat4 transform)
 	m_phongShader.bindUniform("CameraPosition",
 		glm::vec3(glm::inverse(m_viewMatrix)[3]));
 
+	// Bind the lights
+	m_phongShader.bindUniform("LightDirection", m_light.direction);
+	m_phongShader.bindUniform("LightColor", m_light.color);
+	m_phongShader.bindUniform("AmbientColor", m_ambientLight);
+
+	// Bind the material settings
+	m_phongShader.bindUniform("Ka", v_ambient / 255.f);
+	m_phongShader.bindUniform("Kd", v_diffuse / 255.f);
+	m_phongShader.bindUniform("Ks", v_specular / 255.f);
+	m_phongShader.bindUniform("specularPower", v_specularStrength);
+
 	// Bind the transform
 	m_phongShader.bindUniform("ProjectionViewModel", pvm);
-
-	// Bind the light direction
-	m_phongShader.bindUniform("LightDirection", m_light.direction);
-
-	// Bind the light colours
-	m_phongShader.bindUniform("AmbientColor", m_ambientLight);
-	m_phongShader.bindUniform("LightColor", m_light.color);
-
+	
 	// Bind the model matrix
 	m_phongShader.bindUniform("ModelMatrix", transform);
-
 	
-
 	// Draw the quad using Mesh's draw
 	m_bunnyMesh.draw();
 }

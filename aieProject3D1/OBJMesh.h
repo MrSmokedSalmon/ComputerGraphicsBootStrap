@@ -73,6 +73,21 @@ private:
 		int				materialID;
 	};
 
+	int kaUniform;
+	int kdUniform;
+	int ksUniform;
+	int keUniform;
+	int opacityUniform;
+	int specPowUniform;
+
+	int alphaTexUniform;
+	int ambientTexUniform;
+	int diffuseTexUniform;
+	int specTexUniform;
+	int specHighlightTexUniform;
+	int normalTexUniform;
+	int dispTexUniform;
+
 	std::string				m_filename;
 	std::vector<MeshChunk>	m_meshChunks;
 	std::vector<Material>	m_materials;

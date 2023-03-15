@@ -19,7 +19,8 @@ uniform vec3 AmbientColor; // Ambient light colour
 uniform vec3 LightColor; // Diffuse light colour
 uniform vec3 LightDirection;    // Light direction from light
 
-void main(){
+void main()
+{
     vec3 N = normalize(vNormal);
     vec3 L = normalize(LightDirection);
 
@@ -27,15 +28,14 @@ void main(){
     float lambertTerm = max(0, min(1, dot(N, -L)));
 
     vec3 V = normalize(CameraPosition - vPosition.xyz);
+
     vec3 R = reflect(L, N);
 
-    float specularTerm = pow(min(0.0f, dot(R, V)), specularPower);
+    float specularTerm = pow(max(0, dot(R, V)), specularPower);
 
     vec3 Ambient = AmbientColor * Ka;
     vec3 Diffuse = LightColor * Kd * lambertTerm;
-    vec3 Specular = LightColor * Ks * specularTerm;
+    vec3 specular = LightColor * Ks * specularTerm;
 
-    vec4 newColor = vec4(Ambient + Diffuse + Specular, 1);
-
-    FragColor = newColor;
+    FragColor = vec4(Ambient + Diffuse + specular, 1);
 }

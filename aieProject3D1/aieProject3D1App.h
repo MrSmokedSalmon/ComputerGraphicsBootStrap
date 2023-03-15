@@ -52,8 +52,14 @@ protected:
 	struct Light {
 		glm::vec3 direction;
 		glm::vec3 color;
+		float intensity;
 	};
 
 	Light m_light;
 	glm::vec3 m_ambientLight;
+
+	glm::vec3 v_ambient = glm::vec3(0.2f);
+	glm::vec3 v_diffuse = glm::vec3(1.f);
+	glm::vec3 v_specular = glm::vec3(0.8f);
+	float v_specularStrength = 320.f;
 };

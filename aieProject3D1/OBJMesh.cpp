@@ -142,36 +142,36 @@ bool OBJMesh::load(const char* filename, bool loadTextures /* = true */, bool fl
 
 		m_meshChunks.push_back(chunk);
 	}
-	
-	// load obj
-	return true;
-}
 
-void OBJMesh::draw(bool usePatches /* = false */) {
-
+	// pull uniforms from the shader
 	int program = -1;
 	glGetIntegerv(GL_CURRENT_PROGRAM, &program);
 
 	if (program == -1) {
 		printf("No shader bound!\n");
-		return;
+		return true;
 	}
 
-	// pull uniforms from the shader
-	int kaUniform = glGetUniformLocation(program, "Ka");
-	int kdUniform = glGetUniformLocation(program, "Kd");
-	int ksUniform = glGetUniformLocation(program, "Ks");
-	int keUniform = glGetUniformLocation(program, "Ke");
-	int opacityUniform = glGetUniformLocation(program, "opacity");
-	int specPowUniform = glGetUniformLocation(program, "specularPower");
+	kaUniform = glGetUniformLocation(program, "Ka");
+	kdUniform = glGetUniformLocation(program, "Kd");
+	ksUniform = glGetUniformLocation(program, "Ks");
+	keUniform = glGetUniformLocation(program, "Ke");
+	opacityUniform = glGetUniformLocation(program, "opacity");
+	specPowUniform = glGetUniformLocation(program, "specularPower");
 
-	int alphaTexUniform = glGetUniformLocation(program, "alphaTexture");
-	int ambientTexUniform = glGetUniformLocation(program, "ambientTexture");
-	int diffuseTexUniform = glGetUniformLocation(program, "diffuseTexture");
-	int specTexUniform = glGetUniformLocation(program, "specularTexture");
-	int specHighlightTexUniform = glGetUniformLocation(program, "specularHighlightTexture");
-	int normalTexUniform = glGetUniformLocation(program, "normalTexture");
-	int dispTexUniform = glGetUniformLocation(program, "displacementTexture");
+	alphaTexUniform = glGetUniformLocation(program, "alphaTexture");
+	ambientTexUniform = glGetUniformLocation(program, "ambientTexture");
+	diffuseTexUniform = glGetUniformLocation(program, "diffuseTexture");
+	specTexUniform = glGetUniformLocation(program, "specularTexture");
+	specHighlightTexUniform = glGetUniformLocation(program, "specularHighlightTexture");
+	normalTexUniform = glGetUniformLocation(program, "normalTexture");
+	dispTexUniform = glGetUniformLocation(program, "displacementTexture");
+
+	// load obj
+	return true;
+}
+
+void OBJMesh::draw(bool usePatches /* = false */) {
 
 	// set texture slots (these don't change per material)
 	if (diffuseTexUniform >= 0)
