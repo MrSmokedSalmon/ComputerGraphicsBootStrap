@@ -370,9 +370,9 @@ glm::mat4 aieProject3D1App::PointToMatEncode(PointLight& light)
 	glm::mat4 encodePoint;
 
 	encodePoint[0] = *(new glm::vec4(light.position, light.constant));
-	encodePoint[1] = *(new glm::vec4(light.ambient, light.linear));
-	encodePoint[2] = *(new glm::vec4(light.diffuse, light.quadratic));
-	encodePoint[3] = *(new glm::vec4(light.specular, 0));
+	encodePoint[1] = *(new glm::vec4(light.ambient / 255.f, light.linear));
+	encodePoint[2] = *(new glm::vec4(light.diffuse / 255.f, light.quadratic));
+	encodePoint[3] = *(new glm::vec4(light.specular / 255.f, 0));
 
 	return encodePoint;
 }
