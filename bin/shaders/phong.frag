@@ -12,7 +12,7 @@ struct PointLight {
     vec3 diffuse;
     vec3 specular;
 };
-#define NR_POINT_LIGHTS 4
+#define NR_POINT_LIGHTS 1
 
 in vec3 vNormal;    // Surface normal from mesh
 in vec4 vPosition;          // World-space surface position from mesh
@@ -23,6 +23,8 @@ uniform vec3 CameraPosition; // World-space position of the camera
 
 uniform mat4 encodedPL[NR_POINT_LIGHTS];
 uniform PointLight PointLights[NR_POINT_LIGHTS];
+
+uniform bool enablePoint = false;
 
 // MTL Data
 uniform vec3 Ka; // Ambient material colour
@@ -102,10 +104,13 @@ void main()
 
     vec3 result = ambient + diffuse + specular;
 
-    for (int i = 0; i < NR_POINT_LIGHTS; i++)
+    if (enablePoint)
     {
-        PointLight pl = DecodePoint(encodedPL[i]);
-        result -= CalcPointLight(pl, vNormal, vPosition.xyz, CameraPosition);
+        for (int i = 0; i < NR_POINT_LIGHTS; i++)
+        {
+            PointLight pl = DecodePoint(encodedPL[i]);
+            result += CalcPointLight(pl, vNormal, vPosition.xyz, CameraPosition);
+        }
     }
 
     FragColor = vec4(result, 1);

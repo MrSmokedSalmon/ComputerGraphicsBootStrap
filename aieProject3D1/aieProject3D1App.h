@@ -1,4 +1,7 @@
 #pragma once
+
+#define NR_POINT_LIGHTS 1
+
 #include "Application.h"
 
 #include "Shader.h"
@@ -68,14 +71,26 @@ protected:
 	};
 
 	Light m_light;
-	Light m_pointLight;
 	glm::vec3 m_ambientLight;
 
-	PointLight* pointLights[4];
+	Mesh m_lightMesh;
+	glm::mat4 m_lightTransform;
+	PointLight* pointLight = new PointLight
+	{
+		glm::vec3(4,1,4),
+		1.f, 0.35f, 0.44f,
+		glm::vec3(1),
+		glm::vec3(1),
+		glm::vec3(1)
+	};
 
-	glm::vec3 v_ambient = glm::vec3(0.2f);
-	glm::vec3 v_diffuse = glm::vec3(1.f);
-	glm::vec3 v_specular = glm::vec3(0.8f);
+	PointLight pointLights[1];
+
+	bool enablePoints;
+
+	glm::vec3 v_ambient = glm::vec3(51.f);
+	glm::vec3 v_diffuse = glm::vec3(255.f);
+	glm::vec3 v_specular = glm::vec3(204.f);
 	float v_specularStrength = 320.f;
 
 	glm::mat4 PointToMatEncode(PointLight& light);
