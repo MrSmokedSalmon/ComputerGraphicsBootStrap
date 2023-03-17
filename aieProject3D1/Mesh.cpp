@@ -115,6 +115,10 @@ void Mesh::Initialise(unsigned int vertexCount, const Vertex* vertices, unsigned
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
+void Mesh::InitialiseCube()
+{
+}
+
 void Mesh::Draw()
 {
 	glBindVertexArray(m_vao);

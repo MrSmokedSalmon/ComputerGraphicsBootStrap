@@ -73,8 +73,6 @@ protected:
 	Light m_light;
 	glm::vec3 m_ambientLight;
 
-	Mesh m_lightMesh;
-	glm::mat4 m_lightTransform;
 	PointLight* pointLight = new PointLight
 	{
 		glm::vec3(4,1,4),
