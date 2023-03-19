@@ -127,6 +127,57 @@ bool aieProject3D1App::LaunchShaders()
 	return true;
 }
 
+void aieProject3D1App::CreatePlane(Mesh& mesh)
+{
+	Mesh::Vertex vertices[4];
+
+	vertices[0].position = { -0.5f, 0, 0.5f, 1 };
+	vertices[1].position = { 0.5f, 0, 0.5f, 1 };
+	vertices[2].position = { -0.5f, 0, -0.5f, 1 };
+	vertices[3].position = { 0.5f, 0, -0.5f, 1 };
+
+
+	unsigned int indices[6] =
+	{
+		0,1,2,
+		2,1,3
+	};
+
+	mesh.Initialise(4, vertices, 6, indices);
+}
+
+void aieProject3D1App::CreateCube(Mesh& mesh)
+{
+	Mesh::Vertex vertices[8];
+
+	vertices[0].position = { -0.5f, -0.5f, 0.5f, 1 };
+	vertices[1].position = { 0.5f, -0.5f, 0.5f, 1 };
+	vertices[2].position = { -0.5f, -0.5f, -0.5f, 1 };
+	vertices[3].position = { 0.5f, -0.5f, -0.5f, 1 };
+	vertices[4].position = { -0.5f, 0.5f, 0.5f, 1 };
+	vertices[5].position = { 0.5f, 0.5f, 0.5f, 1 };
+	vertices[6].position = { -0.5f, 0.5f, -0.5f, 1 };
+	vertices[7].position = { 0.5f, 0.5f, -0.5f, 1 };
+
+	unsigned int indices[36] =
+	{
+		2,1,0,
+		3,1,2,
+		0,1,4,
+		1,5,4,
+		1,3,5,
+		7,5,3,
+		3,2,7,
+		6,7,2,
+		2,0,6,
+		4,6,0,
+		4,5,6,
+		6,5,7
+	};
+
+	mesh.Initialise(8, vertices, 36, indices);
+}
+
 void aieProject3D1App::ImGUIRefresher()
 {
 	ImGui::Begin("Light Settings");
@@ -199,40 +250,13 @@ bool aieProject3D1App::QuadLoader()
 		return false;
 	}
 
-	// Defined as 4 vertices for the 2 triangles
-	Mesh::Vertex vertices[8];
-	vertices[0].position = { -0.5f, -0.5f, 0.5f, 1 };
-	vertices[1].position = { 0.5f, -0.5f, 0.5f, 1 };
-	vertices[2].position = { -0.5f, -0.5f, -0.5f, 1 };
-	vertices[3].position = { 0.5f, -0.5f, -0.5f, 1 };
-	vertices[4].position = { -0.5f, 0.5f, 0.5f, 1 };
-	vertices[5].position = { 0.5f, 0.5f, 0.5f, 1 };
-	vertices[6].position = { -0.5f, 0.5f, -0.5f, 1 };
-	vertices[7].position = { 0.5f, 0.5f, -0.5f, 1 };
-
-	unsigned int indices[36] = 
-	{ 
-		2,1,0,
-		3,1,2,
-		0,1,4,
-		1,5,4,
-		1,3,5,
-		7,5,3,
-		3,2,7,
-		6,7,2,
-		2,0,6,
-		4,6,0,
-		4,5,6,
-		6,5,7
-	};
-
-	m_quadMesh.Initialise(8, vertices, 36, indices);
+	CreatePlane(m_quadMesh);
 
 	// This is a 'unit' wide quad
 	m_quadTransform = {
-		5, 0, 0, 0,
-		0, 5, 0, 0,
-		0, 0, 5, 0,
+		10, 0, 0, 0,
+		0, 10, 0, 0,
+		0, 0, 10, 0,
 		0, 0, 0, 1
 	};
 

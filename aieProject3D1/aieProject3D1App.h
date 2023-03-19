@@ -26,6 +26,9 @@ public:
 protected:
 	bool LaunchShaders();
 
+	void CreatePlane(Mesh& mesh);
+	void CreateCube(Mesh& mesh);
+
 	bool QuadLoader();
 	bool BunnyLoader();
 	bool PhongLoader();
