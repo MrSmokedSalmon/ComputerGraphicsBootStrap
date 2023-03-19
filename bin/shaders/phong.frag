@@ -66,6 +66,8 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     diffuse *= attenuation;
     specular *= attenuation;
 
+// Try dividing the specular by 100 to get the desired specular effects
+
     return (ambient + diffuse + specular);
 }
 
