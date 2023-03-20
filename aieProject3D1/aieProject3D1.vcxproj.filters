@@ -51,6 +51,12 @@
     <ClCompile Include="Shader.cpp">
       <Filter>Source Files\Provided</Filter>
     </ClCompile>
+    <ClCompile Include="SimpleCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="aieProject3D1App.h">
@@ -76,6 +82,12 @@
     </ClInclude>
     <ClInclude Include="tiny_obj_loader.h">
       <Filter>Header Files\Provided</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseCamera.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

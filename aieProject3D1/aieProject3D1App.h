@@ -1,6 +1,7 @@
 #pragma once
 
 #define NR_POINT_LIGHTS 1
+#define PI 3.14159265359
 
 #include "Application.h"
 
@@ -8,6 +9,7 @@
 #include "Mesh.h"
 #include "Space.h"
 #include "OBJMesh.h"
+#include "SimpleCamera.h"
 
 #include <glm/mat4x4.hpp>
 
@@ -28,6 +30,8 @@ protected:
 
 	void CreatePlane(Mesh& mesh);
 	void CreateCube(Mesh& mesh);
+	void CreateSphere(Mesh& mesh);
+	Mesh::Vertex* CreateCircle(int point);
 
 	bool QuadLoader();
 	bool BunnyLoader();
@@ -95,4 +99,6 @@ protected:
 	float v_specularStrength = 320.f;
 
 	glm::mat4 PointToMatEncode(PointLight& light);
+
+	SimpleCamera m_camera;
 };

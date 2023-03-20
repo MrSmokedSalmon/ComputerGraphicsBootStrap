@@ -29,8 +29,8 @@ bool aieProject3D1App::startup() {
 	Gizmos::create(10000, 10000, 10000, 10000);
 
 	// create simple camera transforms
-	m_viewMatrix = glm::lookAt(vec3(10), vec3(0), vec3(0, 1, 0));
-	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, 16.0f / 9.0f, 0.1f, 1000.0f);
+	m_viewMatrix = m_camera.GetViewMatrix();
+	m_projectionMatrix = m_camera.GetProjectionMatrix(getWindowWidth(), getWindowHeight());
 
 	m_light.color = { 1, 1, 0 };
 	m_light.intensity = 1;
@@ -83,8 +83,12 @@ void aieProject3D1App::update(float deltaTime) {
 	// quit if we press escape
 	aie::Input* input = aie::Input::getInstance();
 
+	m_quadTransform = glm::rotate(m_quadTransform, glm::radians<float>(0.1f), glm::vec3(0, 1, 0));
+
 	// Rotate the light to emulate a 'day/night' cycle
 	m_light.direction = glm::normalize(glm::vec3(glm::cos(time * 2), glm::sin(time * 2), 0));
+
+	m_camera.Update(deltaTime);
 
 	if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))
 		quit();
@@ -100,8 +104,10 @@ void aieProject3D1App::draw()
 	//space->Draw();
 
 	// update perspective based on screen size
-	m_projectionMatrix = glm::perspective(glm::pi<float>() * 0.25f, 
-		getWindowWidth() / (float)getWindowHeight(), 0.1f, 1000.0f);
+	m_viewMatrix = m_camera.GetViewMatrix();
+
+	m_projectionMatrix = m_camera.GetProjectionMatrix(getWindowWidth(), getWindowHeight());
+
 	auto pv = m_projectionMatrix * m_viewMatrix;
 
 	float time = getTime();
@@ -178,6 +184,68 @@ void aieProject3D1App::CreateCube(Mesh& mesh)
 	mesh.Initialise(8, vertices, 36, indices);
 }
 
+void aieProject3D1App::CreateSphere(Mesh& mesh)
+{
+	Mesh::Vertex vertices[66];
+
+	float angleX = 0;
+	for (int x = 0; x < 8; x++) 
+	{
+
+		float angleY = 0;
+		for (int y = 0; y < 8; y++)
+		{
+			vertices[x * 8 + y].position =
+			{
+				glm::sin(angleX * PI / 180)/2.f,
+				glm::sin(angleY * PI / 180)/2.f,
+				glm::cos(angleX * PI / 180)/2.f, 
+				1
+			};
+
+			angleY += 360.0f / 8.f;
+		}
+		angleX += 360.0f / 8.f;
+	}
+	//vertices[64].position = {}
+
+	//for (int i = 0; i < 64; i++)
+	//{
+	//
+	//}
+
+	unsigned int indices[36] =
+	{
+		2,1,0,
+		3,1,2,
+		0,1,4,
+		1,5,4,
+		1,3,5,
+		7,5,3,
+		3,2,7,
+		6,7,2,
+		2,0,6,
+		4,6,0,
+		4,5,6,
+		6,5,7
+	};
+
+	mesh.Initialise(8, vertices, 36, indices);
+}
+
+Mesh::Vertex* aieProject3D1App::CreateCircle(int point)
+{
+	Mesh::Vertex vertices[9];
+
+	vertices[8].position = {0,0,0,0};
+	for (int i = 0; i < 8; i++)
+	{
+
+	}
+
+	return vertices;
+}
+
 void aieProject3D1App::ImGUIRefresher()
 {
 	ImGui::Begin("Light Settings");
@@ -189,6 +257,15 @@ void aieProject3D1App::ImGUIRefresher()
 		&m_light.intensity, 0.1, 1, 100);
 	ImGui::DragFloat3("Ambient Light Color", 
 		&m_ambientLight[0], 1, 0, 255);
+	ImGui::End();
+
+	ImGui::Begin("Camera Settings");
+	ImGui::DragFloat3("Position",
+		&m_camera.GetPosition()[0], 0.1, 0, 1);
+	ImGui::DragFloat("Move Speed",
+		&m_camera.m_moveSpeed, 0.1, 0.1, 10);
+	ImGui::DragFloat("Sensitivity",
+		&m_camera.m_turnSpeed, 0.01, 0, 10);
 	ImGui::End();
 
 	ImGui::Begin("Material Settings");

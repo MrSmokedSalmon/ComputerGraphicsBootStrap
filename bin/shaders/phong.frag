@@ -50,7 +50,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     float diff = max(dot(normal, lightDir), 0.0);
     // Specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), specularPower);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), specularPower / 100);
 
     // Attenuation
     float dist = length(light.position - fragPos);
@@ -65,8 +65,6 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir)
     ambient *= attenuation;
     diffuse *= attenuation;
     specular *= attenuation;
-
-// Try dividing the specular by 100 to get the desired specular effects
 
     return (ambient + diffuse + specular);
 }

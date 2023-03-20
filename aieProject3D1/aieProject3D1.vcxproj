@@ -171,6 +171,8 @@
   <ItemGroup>
     <ClCompile Include="aieProject3D1App.cpp" />
     <ClCompile Include="AstralBody.cpp" />
+    <ClCompile Include="BaseCamera.cpp" />
+    <ClCompile Include="SimpleCamera.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="OBJMesh.cpp" />
@@ -181,6 +183,8 @@
   <ItemGroup>
     <ClInclude Include="aieProject3D1App.h" />
     <ClInclude Include="AstralBody.h" />
+    <ClInclude Include="BaseCamera.h" />
+    <ClInclude Include="SimpleCamera.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="OBJMesh.h" />
     <ClInclude Include="RenderTarget.h" />
