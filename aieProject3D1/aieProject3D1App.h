@@ -9,7 +9,9 @@
 #include "Mesh.h"
 #include "Space.h"
 #include "OBJMesh.h"
-#include "SimpleCamera.h"
+
+#include "FlyCamera.h"
+#include "StationaryCamera.h"
 
 #include <glm/mat4x4.hpp>
 
@@ -36,10 +38,12 @@ protected:
 	bool QuadLoader();
 	bool BunnyLoader();
 	bool PhongLoader();
+	bool QuadTextureLoader();
 
 	void QuadDraw(glm::mat4 pvm);
 	void BunnyDraw(glm::mat4 pvm, float time);
 	void PhongDraw(glm::mat4 pvm, glm::mat4 transform);
+	void QuadTexturedDraw(glm::mat4 pvm);
 
 	void ImGUIRefresher();
 	void ImGUIPointLight(int number);
@@ -50,9 +54,12 @@ protected:
 	glm::mat4	m_viewMatrix;
 	glm::mat4	m_projectionMatrix;
 
+	aie::Texture m_gridTexture;
+
 	aie::ShaderProgram	m_simpleShader;
 	aie::ShaderProgram	m_colorShader;
 	aie::ShaderProgram	m_phongShader;
+	aie::ShaderProgram	m_texturedShader;
 
 	Mesh				m_quadMesh;
 	glm::mat4			m_quadTransform;
@@ -100,5 +107,7 @@ protected:
 
 	glm::mat4 PointToMatEncode(PointLight& light);
 
-	SimpleCamera m_camera;
+	//FlyCamera m_camera;
+	StationaryCamera m_camera;
+	glm::vec3 stationaryRotation;
 };

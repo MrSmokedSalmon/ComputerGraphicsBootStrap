@@ -51,10 +51,13 @@
     <ClCompile Include="Shader.cpp">
       <Filter>Source Files\Provided</Filter>
     </ClCompile>
-    <ClCompile Include="SimpleCamera.cpp">
+    <ClCompile Include="FlyCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BaseCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StationaryCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -83,10 +86,13 @@
     <ClInclude Include="tiny_obj_loader.h">
       <Filter>Header Files\Provided</Filter>
     </ClInclude>
-    <ClInclude Include="SimpleCamera.h">
+    <ClInclude Include="FlyCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BaseCamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StationaryCamera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

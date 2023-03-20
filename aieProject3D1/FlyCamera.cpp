@@ -1,16 +1,16 @@
-#include "SimpleCamera.h"
+#include "FlyCamera.h"
 
 #include <glm/ext.hpp>
 #include "Input.h"
 
-SimpleCamera::SimpleCamera()
+FlyCamera::FlyCamera()
 {
 	m_position = glm::vec3(-10, 2, 0);
 	m_phi = 0;
 	m_theta = 0;
 }
 
-void SimpleCamera::Update(float deltaTime)
+void FlyCamera::Update(float deltaTime)
 {
 	aie::Input* input = aie::Input::getInstance();
 	float thetaR = glm::radians(m_theta);
@@ -42,9 +42,4 @@ void SimpleCamera::Update(float deltaTime)
 	}
 
 	m_lastMouse = glm::vec2(mx, my);
-}
-
-glm::mat4 SimpleCamera::GetTransform(glm::vec3 position, glm::vec3 eularAngles, glm::vec3 scale)
-{
-	return glm::mat4();
 }

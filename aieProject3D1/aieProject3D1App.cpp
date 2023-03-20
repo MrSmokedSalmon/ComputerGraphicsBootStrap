@@ -29,8 +29,8 @@ bool aieProject3D1App::startup() {
 	Gizmos::create(10000, 10000, 10000, 10000);
 
 	// create simple camera transforms
-	m_viewMatrix = m_camera.GetViewMatrix();
-	m_projectionMatrix = m_camera.GetProjectionMatrix(getWindowWidth(), getWindowHeight());
+	m_camera.SetViewMatrix(m_camera.GetPosition(), m_camera.GetPosition() + glm::vec3(1,0,0), {0,1,0});
+	m_camera.SetProjectionMatrix(0.25f, getWindowWidth(), getWindowHeight(), 0.1f, 1000.f);
 
 	m_light.color = { 1, 1, 0 };
 	m_light.intensity = 1;
@@ -84,6 +84,7 @@ void aieProject3D1App::update(float deltaTime) {
 	aie::Input* input = aie::Input::getInstance();
 
 	m_quadTransform = glm::rotate(m_quadTransform, glm::radians<float>(0.1f), glm::vec3(0, 1, 0));
+	m_bunnyTransform = glm::rotate(m_bunnyTransform, glm::radians<float>(0.1f), glm::vec3(0, 1, 0));
 
 	// Rotate the light to emulate a 'day/night' cycle
 	m_light.direction = glm::normalize(glm::vec3(glm::cos(time * 2), glm::sin(time * 2), 0));
@@ -106,27 +107,34 @@ void aieProject3D1App::draw()
 	// update perspective based on screen size
 	m_viewMatrix = m_camera.GetViewMatrix();
 
-	m_projectionMatrix = m_camera.GetProjectionMatrix(getWindowWidth(), getWindowHeight());
+	//m_projectionMatrix = m_camera.GetProjectionMatrix();
 
-	auto pv = m_projectionMatrix * m_viewMatrix;
+	auto pv = m_camera.GetProjectionViewMatrix();
 
 	float time = getTime();
 
-	QuadDraw(pv * m_quadTransform);
+	//QuadDraw(pv * m_quadTransform);
 	//BunnyDraw(pv * m_bunnyTransform, time);
+	QuadTexturedDraw(pv * m_quadTransform);
 	PhongDraw(pv * m_bunnyTransform, m_bunnyTransform);
 
-	Gizmos::draw(m_projectionMatrix * m_viewMatrix);
+
+	//Gizmos::draw(m_projectionMatrix * m_viewMatrix);
+	//Gizmos::draw(m_viewMatrix * m_projectionMatrix);
+	Gizmos::draw(pv);
 }
 
 bool aieProject3D1App::LaunchShaders()
 {
-	if (!QuadLoader())
-		return false;
+	//if (!QuadLoader())
+	//	return false;
 
 	//if (!BunnyLoader())
 	//	return false;
 
+	if (!QuadTextureLoader())
+		return false;
+	
 	if (!PhongLoader())
 		return false;
 
@@ -261,11 +269,18 @@ void aieProject3D1App::ImGUIRefresher()
 
 	ImGui::Begin("Camera Settings");
 	ImGui::DragFloat3("Position",
-		&m_camera.GetPosition()[0], 0.1, 0, 1);
-	ImGui::DragFloat("Move Speed",
-		&m_camera.m_moveSpeed, 0.1, 0.1, 10);
-	ImGui::DragFloat("Sensitivity",
-		&m_camera.m_turnSpeed, 0.01, 0, 10);
+		&m_camera.GetPosition()[0]);
+	ImGui::DragFloat3("Rotation",
+		&stationaryRotation[0], 0, 0, 360);
+	if (ImGui::Button("Set Rotation", 
+		{ 10,10 }))
+	{
+		m_camera.SetRotation(stationaryRotation);
+	}
+	//ImGui::DragFloat("Move Speed",
+	//	&m_camera.m_moveSpeed, 0.1, 0.1, 10);
+	//ImGui::DragFloat("Sensitivity",
+	//	&m_camera.m_turnSpeed, 0.01, 0, 10);
 	ImGui::End();
 
 	ImGui::Begin("Material Settings");
@@ -399,6 +414,37 @@ bool aieProject3D1App::PhongLoader()
 	return true;
 }
 
+bool aieProject3D1App::QuadTextureLoader() 
+{
+	m_texturedShader.loadShader(aie::eShaderStage::VERTEX,
+		"./shaders/textured.vert");
+	m_texturedShader.loadShader(aie::eShaderStage::FRAGMENT,
+		"./shaders/textured.frag");
+
+	if (m_texturedShader.link() == false)
+	{
+		printf("Textured Shader has an Error: %s\n", m_texturedShader.getLastError());
+		return false;
+	}
+
+	if (m_gridTexture.load("./textures/numbered_grid.tga") == false)
+	{
+		printf("Failed to load the grid texture correctly!\n");
+		return false;
+	}
+
+	m_quadMesh.InitialiseQuad();
+
+	m_quadTransform = {
+		10,0,0,0,
+		0,10,0,0,
+		0,0,10,0,
+		0,0,0,1
+	};
+
+	return true;
+}
+
 void aieProject3D1App::QuadDraw(glm::mat4 pvm)
 {
 	// Bind the shader
@@ -469,6 +515,24 @@ void aieProject3D1App::PhongDraw(glm::mat4 pvm, glm::mat4 transform)
 
 	// Draw the quad using Mesh's draw
 	m_bunnyMesh.draw();
+}
+
+void aieProject3D1App::QuadTexturedDraw(glm::mat4 pvm)
+{
+	// Bind the shader
+	m_texturedShader.bind();
+
+	// Bind the transform
+	m_texturedShader.bindUniform("ProjectionViewModel", pvm);
+
+	// Bind the texture location
+	m_texturedShader.bindUniform("diffuseTexture", 0);
+
+	// Bind the texture to a specific location
+	m_gridTexture.bind(0);
+
+	// Draw the quad using Mesh's draw
+	m_quadMesh.Draw();
 }
 
 glm::mat4 aieProject3D1App::PointToMatEncode(PointLight& light)

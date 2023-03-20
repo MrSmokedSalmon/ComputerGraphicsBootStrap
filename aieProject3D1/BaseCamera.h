@@ -1,5 +1,6 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <glm/ext.hpp>
 class BaseCamera
 {
 public:
@@ -28,6 +29,7 @@ protected:
 
 	glm::mat4 m_projectionViewTransform;
 	glm::mat4 m_viewTransform;
+	glm::mat4 m_projectionTransform;
 	glm::mat4 m_worldTransform;
 
 	glm::vec3 m_position;
@@ -37,6 +39,6 @@ protected:
 	float m_theta;
 	float m_phi;
 
-	float m_lastMouse;
+	glm::vec2 m_lastMouse;
 };
 
