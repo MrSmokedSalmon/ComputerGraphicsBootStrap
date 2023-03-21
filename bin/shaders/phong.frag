@@ -15,9 +15,11 @@ struct PointLight {
 #define NR_POINT_LIGHTS 1
 
 in vec3 vNormal;    // Surface normal from mesh
-in vec4 vPosition;          // World-space surface position from mesh
+in vec4 vPosition;  // World-space surface position from mesh
 
 out vec4 FragColor;
+
+uniform sampler2D diffuseTexture; // the diffuse texture
 
 uniform vec3 CameraPosition; // World-space position of the camera
 

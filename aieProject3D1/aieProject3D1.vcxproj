@@ -173,10 +173,12 @@
     <ClCompile Include="AstralBody.cpp" />
     <ClCompile Include="BaseCamera.cpp" />
     <ClCompile Include="FlyCamera.cpp" />
+    <ClCompile Include="Instance.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="OBJMesh.cpp" />
     <ClCompile Include="RenderTarget.cpp" />
+    <ClCompile Include="Scene.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Space.cpp" />
     <ClCompile Include="StationaryCamera.cpp" />
@@ -186,9 +188,11 @@
     <ClInclude Include="AstralBody.h" />
     <ClInclude Include="BaseCamera.h" />
     <ClInclude Include="FlyCamera.h" />
+    <ClInclude Include="Instance.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="OBJMesh.h" />
     <ClInclude Include="RenderTarget.h" />
+    <ClInclude Include="Scene.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Space.h" />
     <ClInclude Include="StationaryCamera.h" />
