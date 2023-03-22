@@ -54,7 +54,6 @@ protected:
 
 
 	void ImGUIRefresher();
-	void ImGUIPointLight(int number);
 
 	Scene* m_scene;
 
@@ -87,41 +86,13 @@ protected:
 
 	aie::OBJMesh		m_datsunMesh;
 	glm::mat4			m_datsunTransform;
-	
-	struct PointLight {
-		glm::vec3 position;
 
-		float constant;
-		float linear;
-		float quadratic;
-
-		glm::vec3 ambient;
-		glm::vec3 diffuse;
-		glm::vec3 specular;
-	};
-
-	Light m_light;
 	glm::vec3 m_ambientLight;
-
-	PointLight* pointLight = new PointLight
-	{
-		glm::vec3(4,1,4),
-		1.f, 0.35f, 0.44f,
-		glm::vec3(1),
-		glm::vec3(1),
-		glm::vec3(1)
-	};
-
-	PointLight pointLights[1];
-
-	bool enablePoints;
 
 	glm::vec3 v_ambient = glm::vec3(0);
 	glm::vec3 v_diffuse = glm::vec3(204.f);
 	glm::vec3 v_specular = glm::vec3(127.f);
 	float v_specularStrength = 20.f;
-
-	glm::mat4 PointToMatEncode(PointLight& light);
 
 	FlyCamera m_camera;
 	//StationaryCamera m_camera;

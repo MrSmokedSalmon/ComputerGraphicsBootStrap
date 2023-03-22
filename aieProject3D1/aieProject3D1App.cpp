@@ -32,18 +32,18 @@ bool aieProject3D1App::startup() {
 	m_camera.SetViewMatrix(m_camera.GetPosition(), m_camera.GetPosition() + glm::vec3(1,0,0), {0,1,0});
 	m_camera.SetProjectionMatrix(0.25f, getWindowWidth(), getWindowHeight(), 0.1f, 1000.f);
 
+	m_ambientLight = { 20.5f, 0.5f, 0.5f };
+
+	Light light;
+	light.color = { 1,1,1 };
+	light.direction = { 1,-1,1 };
+
+	m_scene = new Scene(&m_camera, glm::vec2(getWindowWidth(), getWindowHeight()),
+		light, m_ambientLight);
+
 	
-	m_ambientLight = { 0.5f, 0.5f, 0.5f };
-
-
-	//https://learnopengl.com/Lighting/Multiple-lights
-	for (int i = 0; i < NR_POINT_LIGHTS; i++)
-	{
-		PointLight newPL;
-		newPL = *(new PointLight());
-		newPL.position = glm::vec3(0);
-		pointLights[i] = newPL;
-	}
+	m_scene->AddPointLights({ 5,3,0 }, { 1,0,0 }, 1);
+	m_scene->AddPointLights({ -5,3,0 }, { 0,0,1 }, 1);
 	
 	//space = new Space();
 
@@ -87,7 +87,7 @@ void aieProject3D1App::update(float deltaTime) {
 	m_bunnyTransform = glm::rotate(m_bunnyTransform, glm::radians<float>(0.1f), glm::vec3(0, 1, 0));
 
 	// Rotate the light to emulate a 'day/night' cycle
-	m_light.direction = glm::normalize(glm::vec3(glm::cos(time * 2), glm::sin(time * 2), 0));
+	m_scene->GetLight().direction = glm::normalize(glm::vec3(glm::cos(time * 2), glm::sin(time * 2), 0));
 
 	m_camera.Update(deltaTime);
 
@@ -105,7 +105,7 @@ void aieProject3D1App::draw()
 	//space->Draw();
 
 	// update perspective based on screen size
-	m_viewMatrix = m_camera.GetViewMatrix();
+	//m_viewMatrix = m_camera.GetViewMatrix();
 
 	//m_projectionMatrix = m_camera.GetProjectionMatrix();
 
@@ -116,7 +116,7 @@ void aieProject3D1App::draw()
 	m_scene->Draw();
 
 	//QuadTexturedDraw(pv * m_quadTransform);
-	//OBJDraw(pv, m_spearTransform, &m_spearMesh);
+	OBJDraw(pv, m_spearTransform, &m_spearMesh);
 
 	//Gizmos::draw(m_projectionMatrix * m_viewMatrix);
 	//Gizmos::draw(m_viewMatrix * m_projectionMatrix);
@@ -136,7 +136,7 @@ bool aieProject3D1App::LaunchShaders()
 
 	if (m_normalLitShader.link() == false)
 	{
-		printf("Color Shader Error: %s\n", m_normalLitShader.getLastError());
+		printf("Normal Lit Shader Error: %s\n", m_normalLitShader.getLastError());
 		return false;
 	}
 
@@ -149,19 +149,21 @@ bool aieProject3D1App::LaunchShaders()
 	//if (!BunnyLoader())
 	//	return false;
 
-	if (!QuadTextureLoader())
-		return false;
+	//if (!QuadTextureLoader())
+	//	return false;
 	
 	//if (!PhongLoader())
 	//	return false;
 
-	//if (!SpearLoader())
-	//	return false;
+	if (!SpearLoader())
+		return false;
 
-	m_light.color = { 1, 1, 0 };
-	m_scene = new Scene(&m_camera, glm::vec2(getWindowWidth(), getWindowHeight()),
-		m_light, m_ambientLight);
-	m_scene->AddInstance(new Instance(m_spearTransform, &m_spearMesh, &m_normalLitShader));
+	//for (int i = 0; i < 10; i++)
+	//	m_scene->AddInstance(new Instance(glm::vec3(i * 2, 0, 0),
+	//		glm::vec3(0, i * 30, 0), glm::vec3(1),
+	//		&m_spearMesh, &m_normalLitShader));
+
+	
 
 	return true;
 }
@@ -283,9 +285,9 @@ void aieProject3D1App::ImGUIRefresher()
 {
 	ImGui::Begin("Light Settings");
 	ImGui::DragFloat3("Global Light Direction",
-		&m_light.direction[0], 0.1, 0, 1);
+		&m_scene->GetLight().direction[0], 0.1, 0, 1);
 	ImGui::DragFloat3("Global Light Color", 
-		&m_light.color[0], 1, 0, 255);
+		&m_scene->GetLight().color[0], 1, 0, 255);
 	ImGui::DragFloat3("Ambient Light Color", 
 		&m_ambientLight[0], 1, 0, 255);
 	ImGui::End();
@@ -315,40 +317,6 @@ void aieProject3D1App::ImGUIRefresher()
 		&v_specular[0], 1, 0, 255);
 	ImGui::DragFloat("Specular Strength",
 		&v_specularStrength, 0.1, 1, 100);
-	ImGui::End();
-
-	ImGui::Begin("General Settings");
-	ImGui::Checkbox("Enable Point Lights", &enablePoints);
-	ImGui::End();
-
-	for (int i = 0; i < NR_POINT_LIGHTS; i++)
-	{
-		ImGUIPointLight(i);
-	}
-}
-
-void aieProject3D1App::ImGUIPointLight(int number)
-{
-	std::string title = "Point Light";
-	title += std::to_string(number);
-
-	PointLight pl = *pointLight;
-
-	ImGui::Begin(title.c_str());
-	ImGui::DragFloat3("Position",
-		&((*pointLight).position[0]), 0.1f);
-	ImGui::DragFloat3("Ambient",
-		&((*pointLight).ambient[0]), 1, 0, 255);
-	ImGui::DragFloat3("Diffuse",
-		&((*pointLight).diffuse[0]), 1, 0, 255);
-	ImGui::DragFloat3("Specular",
-		&((*pointLight).specular[0]), 1, 0, 255);
-	ImGui::DragFloat("Constant",
-		&((*pointLight).constant), 0.1);
-	ImGui::DragFloat("Linear",
-		&((*pointLight).linear), 0.1);
-	ImGui::DragFloat("Quadratic",
-		&((*pointLight).quadratic), 0.1);
 	ImGui::End();
 }
 
@@ -544,12 +512,9 @@ void aieProject3D1App::PhongDraw(glm::mat4 pvm, glm::mat4 transform)
 		glm::vec3(glm::inverse(m_viewMatrix)[3]));
 
 	// Bind the light
-	m_phongShader.bindUniform("LightDirection", m_light.direction);
-	m_phongShader.bindUniform("LightColor", m_light.color / 255.f);
+	m_phongShader.bindUniform("LightDirection", m_scene->GetLight().direction);
+	m_phongShader.bindUniform("LightColor", m_scene->GetLight().color / 255.f);
 	m_phongShader.bindUniform("AmbientColor", m_ambientLight / 255.f);
-
-	// Bind the enable and diable point lights
-	m_phongShader.bindUniform("enablePoint", enablePoints);
 
 	// Bind the material settings
 	m_phongShader.bindUniform("Ka", v_ambient / 255.f);
@@ -562,14 +527,6 @@ void aieProject3D1App::PhongDraw(glm::mat4 pvm, glm::mat4 transform)
 
 	// Bind the model matrix
 	m_phongShader.bindUniform("ModelMatrix", transform);
-	
-	// Bind the point lights
-	glm::mat4 encodedPoints[NR_POINT_LIGHTS];
-	for (int i = 0; i < NR_POINT_LIGHTS; i++)
-	{
-		encodedPoints[i] = PointToMatEncode(*pointLight);
-	}
-	m_phongShader.bindUniform("encodedPL", *encodedPoints);
 
 	// Draw the quad using Mesh's draw
 	m_spearMesh.draw();
@@ -585,8 +542,8 @@ void aieProject3D1App::QuadTexturedDraw(glm::mat4 pvm)
 		glm::vec3(glm::inverse(m_viewMatrix)[3]));
 
 	// Bind the light
-	m_normalLitShader.bindUniform("LightDirection", m_light.direction);
-	m_normalLitShader.bindUniform("LightColor", m_light.color / 255.f);
+	m_normalLitShader.bindUniform("LightDirection", m_scene->GetLight().direction);
+	m_normalLitShader.bindUniform("LightColor", m_scene->GetLight().color / 255.f);
 	m_normalLitShader.bindUniform("AmbientColor", m_ambientLight / 255.f);
 
 	// Bind the transform
@@ -615,14 +572,14 @@ void aieProject3D1App::OBJDraw(glm::mat4& pv, glm::mat4& transform, aie::OBJMesh
 
 	// Bind the camera position
 	m_normalLitShader.bindUniform("CameraPosition",
-		glm::vec3(glm::inverse(m_viewMatrix)[3]));
+		m_camera.GetPosition());
 
 	// Bind the light
-	m_normalLitShader.bindUniform("LightDirection", m_light.direction);
-	m_normalLitShader.bindUniform("LightColor", m_light.color / 255.f);
-	m_normalLitShader.bindUniform("AmbientColor", m_ambientLight / 255.f);
+	m_normalLitShader.bindUniform("LightDirection", {1,-1,1});
+	m_normalLitShader.bindUniform("LightColor", {1,1,1});
+	m_normalLitShader.bindUniform("AmbientColor", m_ambientLight);
 
-	m_normalLitShader.bindUniform("diffuseTexture", 0);
+	// bind texture
 
 	// Bind the transform
 	m_normalLitShader.bindUniform("ProjectionViewModel", pv * transform);
@@ -646,12 +603,9 @@ void aieProject3D1App::DatsunDraw(glm::mat4 pvm, glm::mat4 transform)
 		glm::vec3(glm::inverse(m_viewMatrix)[3]));
 
 	// Bind the light
-	m_normalLitShader.bindUniform("LightDirection", m_light.direction);
-	m_normalLitShader.bindUniform("LightColor", m_light.color / 255.f);
+	m_normalLitShader.bindUniform("LightDirection", m_scene->GetLight().direction);
+	m_normalLitShader.bindUniform("LightColor", m_scene->GetLight().color / 255.f);
 	m_normalLitShader.bindUniform("AmbientColor", m_ambientLight / 255.f);
-
-	// Bind the enable and diable point lights
-	m_normalLitShader.bindUniform("enablePoint", enablePoints);
 
 	m_normalLitShader.bindUniform("diffuseTexture", 0);
 
@@ -661,26 +615,6 @@ void aieProject3D1App::DatsunDraw(glm::mat4 pvm, glm::mat4 transform)
 	// Bind the model matrix
 	m_normalLitShader.bindUniform("ModelMatrix", m_datsunTransform);
 
-	// Bind the point lights
-	glm::mat4 encodedPoints[NR_POINT_LIGHTS];
-	for (int i = 0; i < NR_POINT_LIGHTS; i++)
-	{
-		encodedPoints[i] = PointToMatEncode(*pointLight);
-	}
-	m_normalLitShader.bindUniform("encodedPL", *encodedPoints);
-
 	// Draw the quad using Mesh's draw
 	m_datsunMesh.draw();
-}
-
-glm::mat4 aieProject3D1App::PointToMatEncode(PointLight& light)
-{
-	glm::mat4 encodePoint;
-
-	encodePoint[0] = *(new glm::vec4(light.position, light.constant));
-	encodePoint[1] = *(new glm::vec4(light.ambient / 255.f, light.linear));
-	encodePoint[2] = *(new glm::vec4(light.diffuse / 255.f, light.quadratic));
-	encodePoint[3] = *(new glm::vec4(light.specular / 255.f, 0));
-
-	return encodePoint;
 }
