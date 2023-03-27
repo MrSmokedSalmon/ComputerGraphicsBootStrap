@@ -1,6 +1,5 @@
 #pragma once
 
-#define NR_POINT_LIGHTS 1
 #define PI 3.14159265359
 
 #include "Application.h"
@@ -41,21 +40,13 @@ protected:
 	Mesh::Vertex* CreateCircle(int point);
 
 	bool QuadLoader();
-	bool BunnyLoader();
-	bool PhongLoader();
-	bool SpearLoader();
 	bool QuadTextureLoader();
-	bool DatsunLoader();
 
 	bool OBJLoader(const char* filePath, aie::OBJMesh &mesh, glm::mat4 &transform, bool loadTextures, glm::vec3 scale = glm::vec3(1));
 
 	void QuadDraw(glm::mat4 pvm);
-	void BunnyDraw(glm::mat4 pvm, float time);
-	void PhongDraw(glm::mat4 pvm, glm::mat4 transform);
 	void OBJDraw(glm::mat4& pv, glm::mat4& transform, aie::OBJMesh* objMesh);
 	void QuadTexturedDraw(glm::mat4 pvm);
-	void DatsunDraw(glm::mat4 pvm, glm::mat4 transform);
-
 
 	void ImGUIRefresher();
 
@@ -75,9 +66,14 @@ protected:
 	aie::ShaderProgram	m_texturedShader;
 	aie::ShaderProgram	m_normalLitShader;
 
+	aie::ShaderProgram	m_postProcessShader;
+	int m_ppEffect = -1;
+
 	aie::RenderTarget m_renderTarget;
 
+
 	Mesh				m_quadMesh;
+	Mesh				m_fullScreenQuad;
 	glm::mat4			m_quadTransform;
 
 	aie::OBJMesh		m_bunnyMesh;

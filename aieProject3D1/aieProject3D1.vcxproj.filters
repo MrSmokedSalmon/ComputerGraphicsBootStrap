@@ -25,6 +25,15 @@
     <Filter Include="Header Files\Space">
       <UniqueIdentifier>{1814c0e4-7704-41c9-9d52-315a195892c0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{6a77ad55-b441-4a2d-8fef-cf1d495ffbaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Frag">
+      <UniqueIdentifier>{bf147ef5-943e-4357-b80d-0396b776a050}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Vert">
+      <UniqueIdentifier>{6a4aed41-82ad-4f21-9364-5b1cc49c63a8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

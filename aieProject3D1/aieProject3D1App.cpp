@@ -104,14 +104,22 @@ void aieProject3D1App::draw()
 	float time = getTime();
 
 	m_scene->Draw();
+	Gizmos::draw(pv);
 
 	m_renderTarget.unbind();
-	
+
 	clearScreen();
 
-	QuadTexturedDraw(pv * m_quadTransform);
+	//m_scene->Draw();
+	//QuadTexturedDraw(pv * m_quadTransform);
 
-	Gizmos::draw(pv);
+	// Bind the Post-Processing Shader and the texture
+	m_postProcessShader.bind();
+	m_postProcessShader.bindUniform("colorTarget", 0);
+	m_postProcessShader.bindUniform("postProcessTarget", m_ppEffect);
+	m_renderTarget.getTarget(0).bind(0);
+
+	m_fullScreenQuad.Draw();
 }
 
 bool aieProject3D1App::LaunchShaders()
@@ -136,8 +144,25 @@ bool aieProject3D1App::LaunchShaders()
 		return false;
 	}
 
+	m_postProcessShader.loadShader(aie::eShaderStage::VERTEX,
+		"./shaders/post.vert");
+	m_postProcessShader.loadShader(aie::eShaderStage::FRAGMENT,
+		"./shaders/post.frag");
+
+	// Post-Processing Shader
+	if (m_postProcessShader.link() == false)
+	{
+		printf("Post-Process Shader Error: %s\n", m_postProcessShader.getLastError());
+		return false;
+	}
+#pragma endregion
+	
 	if (!QuadTextureLoader())
 		return false;
+
+	// Create a full screen quad
+	m_fullScreenQuad.InitialiseFullscreenQuad();
+
 
 	if (!OBJLoader("./soulspear/soulspear.obj", m_spearMesh, m_spearTransform, true))
 		return false;
@@ -147,8 +172,6 @@ bool aieProject3D1App::LaunchShaders()
 		m_scene->AddInstance(new Instance(glm::vec3(i * 2, 0, 0),
 			glm::vec3(0, i * 30, 0), glm::vec3(1),
 			&m_spearMesh, &m_normalLitShader));
-
-#pragma endregion
 
 	return true;
 }
@@ -268,29 +291,44 @@ Mesh::Vertex* aieProject3D1App::CreateCircle(int point)
 
 void aieProject3D1App::ImGUIRefresher()
 {
-	ImGui::Begin("Light Settings");
-	ImGui::DragFloat3("Global Light Direction",
-		&m_scene->GetLight().direction[0], 0.1, 0, 1);
-	ImGui::DragFloat3("Global Light Color", 
-		&m_scene->GetLight().color[0], 1, 0, 255);
-	ImGui::DragFloat3("Ambient Light Color", 
-		&m_ambientLight[0], 1, 0, 255);
-	ImGui::End();
 
-	ImGui::Begin("Camera Settings");
-	ImGui::DragFloat3("Position",
-		&m_camera.GetPosition()[0]);
-	//ImGui::DragFloat3("Rotation",
-	//	&stationaryRotation[0], 0, 0, 360);
-	//if (ImGui::Button("Set Rotation", 
-	//	{ 10,10 }))
-	//{
-	//	m_camera.SetRotation(stationaryRotation);
-	//}
-	ImGui::DragFloat("Move Speed",
-		&m_camera.m_moveSpeed, 0.1, 0.1, 10);
-	ImGui::DragFloat("Sensitivity",
-		&m_camera.m_turnSpeed, 0.01, 0, 10);
+
+	ImGui::Begin("Light Settings");
+	{
+		if (ImGui::CollapsingHeader("Test"))
+
+		{
+			ImGui::DragFloat3("Position",
+				&m_camera.GetPosition()[0]);
+			//ImGui::DragFloat3("Rotation",
+			//	&stationaryRotation[0], 0, 0, 360);
+			//if (ImGui::Button("Set Rotation", 
+			//	{ 10,10 }))
+			//{
+			//	m_camera.SetRotation(stationaryRotation);
+			//}
+			ImGui::DragFloat("Move Speed",
+				&m_camera.m_moveSpeed, 0.1, 0.1, 10);
+			ImGui::DragFloat("Sensitivity",
+				&m_camera.m_turnSpeed, 0.01, 0, 10);
+
+
+		}
+		if (ImGui::CollapsingHeader("Test2"))
+		{
+			ImGui::DragFloat3("Global Light Direction",
+				&m_scene->GetLight().direction[0], 0.1, 0, 1);
+			ImGui::DragFloat3("Global Light Color",
+				&m_scene->GetLight().color[0], 1, 0, 255);
+			ImGui::DragFloat3("Ambient Light Color",
+				&m_ambientLight[0], 1, 0, 255);
+		}
+		if (ImGui::CollapsingHeader("Post Processing"))
+		{
+			ImGui::InputInt("Processing Effect",
+				&m_ppEffect, 1, -1, 12);
+		}
+	}
 	ImGui::End();
 }
 
@@ -339,24 +377,6 @@ bool aieProject3D1App::OBJLoader(const char* filePath, aie::OBJMesh& mesh,
 	return true;
 }
 
-bool aieProject3D1App::SpearLoader()
-{
-	if (m_spearMesh.load("./soulspear/soulspear.obj", true, true) == false)
-	{
-		printf("Spear Mesh Error:\n");
-		return false;
-	}
-
-	m_spearTransform = {
-		1,0,0,0,
-		0,1,0,0,
-		0,0,1,0,
-		0,0,0,1
-	};
-
-	return true;
-}
-
 bool aieProject3D1App::QuadTextureLoader() 
 {
 	m_texturedShader.loadShader(aie::eShaderStage::VERTEX, "./shaders/textured.vert"); 
@@ -390,49 +410,6 @@ void aieProject3D1App::QuadDraw(glm::mat4 pvm)
 
 	// Draw the quad using Mesh's draw
 	m_quadMesh.Draw();
-}
-
-void aieProject3D1App::BunnyDraw(glm::mat4 pvm, float time)
-{
-	// Bind the shader
-	m_colorShader.bind();
-
-	// Bind the transform
-	m_colorShader.bindUniform("ProjectionViewModel", pvm);
-
-	// Bind the base color
-	glm::vec4 baseColor = { 0, 1, 0, 1 };
-	m_colorShader.bindUniform("BaseColor", baseColor);
-
-	// Bind the time
-	m_colorShader.bindUniform("Time", time);
-
-	// Draw the quad using Mesh's draw
-	m_bunnyMesh.draw();
-}
-
-void aieProject3D1App::PhongDraw(glm::mat4 pvm, glm::mat4 transform)
-{
-	// Bind the shader
-	m_phongShader.bind();
-
-	// Bind the camera position
-	m_phongShader.bindUniform("CameraPosition",
-		glm::vec3(glm::inverse(m_viewMatrix)[3]));
-
-	// Bind the light
-	m_phongShader.bindUniform("LightDirection", m_scene->GetLight().direction);
-	m_phongShader.bindUniform("LightColor", m_scene->GetLight().color / 255.f);
-	m_phongShader.bindUniform("AmbientColor", m_ambientLight / 255.f);
-
-	// Bind the transform
-	m_phongShader.bindUniform("ProjectionViewModel", pvm);
-
-	// Bind the model matrix
-	m_phongShader.bindUniform("ModelMatrix", transform);
-
-	// Draw the quad using Mesh's draw
-	m_spearMesh.draw();
 }
 
 void aieProject3D1App::QuadTexturedDraw(glm::mat4 pvm)
