@@ -13,10 +13,12 @@
 #include "FlyCamera.h"
 #include "StationaryCamera.h"
 
-#include <glm/mat4x4.hpp>
+#include <glm/glm.hpp>
 
 #include "Scene.h"
 #include "Instance.h"
+
+#include "RenderTarget.h"
 
 class aieProject3D1App : public aie::Application{
 public:
@@ -45,6 +47,8 @@ protected:
 	bool QuadTextureLoader();
 	bool DatsunLoader();
 
+	bool OBJLoader(const char* filePath, aie::OBJMesh &mesh, glm::mat4 &transform, bool loadTextures, glm::vec3 scale = glm::vec3(1));
+
 	void QuadDraw(glm::mat4 pvm);
 	void BunnyDraw(glm::mat4 pvm, float time);
 	void PhongDraw(glm::mat4 pvm, glm::mat4 transform);
@@ -63,17 +67,15 @@ protected:
 	glm::mat4	m_viewMatrix;
 	glm::mat4	m_projectionMatrix;
 
-	aie::Texture m_diffTexture;
-	aie::Texture m_specTexture;
-	aie::Texture m_normalTexture;
-
-	aie::Texture m_diffuseTexture;
+	aie::Texture m_gridTexture;
 
 	aie::ShaderProgram	m_simpleShader;
 	aie::ShaderProgram	m_colorShader;
 	aie::ShaderProgram	m_phongShader;
 	aie::ShaderProgram	m_texturedShader;
 	aie::ShaderProgram	m_normalLitShader;
+
+	aie::RenderTarget m_renderTarget;
 
 	Mesh				m_quadMesh;
 	glm::mat4			m_quadTransform;
@@ -84,17 +86,9 @@ protected:
 	aie::OBJMesh		m_spearMesh;
 	glm::mat4			m_spearTransform;
 
-	aie::OBJMesh		m_datsunMesh;
-	glm::mat4			m_datsunTransform;
-
 	glm::vec3 m_ambientLight;
-
-	glm::vec3 v_ambient = glm::vec3(0);
-	glm::vec3 v_diffuse = glm::vec3(204.f);
-	glm::vec3 v_specular = glm::vec3(127.f);
-	float v_specularStrength = 20.f;
 
 	FlyCamera m_camera;
 	//StationaryCamera m_camera;
-	glm::vec3 stationaryRotation;
+	//glm::vec3 stationaryRotation;
 };

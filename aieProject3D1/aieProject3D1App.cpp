@@ -43,10 +43,8 @@ bool aieProject3D1App::startup() {
 
 	
 	m_scene->AddPointLights({ 5,3,0 }, { 1,0,0 }, 1);
-	m_scene->AddPointLights({ -5,3,0 }, { 0,0,1 }, 1);
+	m_scene->AddPointLights({ 3,3,0 }, { 0,0,1 }, 1);
 	
-	//space = new Space();
-
 	return LaunchShaders();
 }
 
@@ -59,8 +57,6 @@ void aieProject3D1App::shutdown() {
 void aieProject3D1App::update(float deltaTime) {
 	
 	float time = getTime();
-
-	//space->Update(time);
 
 	// wipe the gizmos clean for this frame
 	Gizmos::clear();
@@ -83,7 +79,6 @@ void aieProject3D1App::update(float deltaTime) {
 	// quit if we press escape
 	aie::Input* input = aie::Input::getInstance();
 
-	m_quadTransform = glm::rotate(m_quadTransform, glm::radians<float>(0.1f), glm::vec3(0, 1, 0));
 	m_bunnyTransform = glm::rotate(m_bunnyTransform, glm::radians<float>(0.1f), glm::vec3(0, 1, 0));
 
 	// Rotate the light to emulate a 'day/night' cycle
@@ -99,15 +94,10 @@ void aieProject3D1App::update(float deltaTime) {
 
 void aieProject3D1App::draw() 
 {
+	m_renderTarget.bind();
+
 	// wipe the screen to the background colour
 	clearScreen();
-
-	//space->Draw();
-
-	// update perspective based on screen size
-	//m_viewMatrix = m_camera.GetViewMatrix();
-
-	//m_projectionMatrix = m_camera.GetProjectionMatrix();
 
 	auto pv = m_camera.GetProjectionViewMatrix();
 
@@ -115,24 +105,30 @@ void aieProject3D1App::draw()
 
 	m_scene->Draw();
 
-	//QuadTexturedDraw(pv * m_quadTransform);
-	OBJDraw(pv, m_spearTransform, &m_spearMesh);
+	m_renderTarget.unbind();
+	
+	clearScreen();
 
-	//Gizmos::draw(m_projectionMatrix * m_viewMatrix);
-	//Gizmos::draw(m_viewMatrix * m_projectionMatrix);
+	QuadTexturedDraw(pv * m_quadTransform);
+
 	Gizmos::draw(pv);
 }
 
 bool aieProject3D1App::LaunchShaders()
 {
+	if (m_renderTarget.initialise(1, getWindowWidth(),
+		getWindowHeight()) == false)
+	{
+		printf("Render Target Error!:\n");
+		return false;
+	}
+
+#pragma region LaunchShader
+
 	m_normalLitShader.loadShader(aie::eShaderStage::VERTEX,
 		"./shaders/normalLit.vert");
 	m_normalLitShader.loadShader(aie::eShaderStage::FRAGMENT,
 		"./shaders/normalLit.frag");
-	//m_normalLitShader.loadShader(aie::eShaderStage::VERTEX,
-	//	"./shaders/textured.vert");
-	//m_normalLitShader.loadShader(aie::eShaderStage::FRAGMENT,
-	//	"./shaders/textured.frag");
 
 	if (m_normalLitShader.link() == false)
 	{
@@ -140,30 +136,19 @@ bool aieProject3D1App::LaunchShaders()
 		return false;
 	}
 
-	//if (!DatsunLoader())
-	//	return false;
-
-	//if (!QuadLoader())
-	//	return false;
-
-	//if (!BunnyLoader())
-	//	return false;
-
-	//if (!QuadTextureLoader())
-	//	return false;
-	
-	//if (!PhongLoader())
-	//	return false;
-
-	if (!SpearLoader())
+	if (!QuadTextureLoader())
 		return false;
 
-	//for (int i = 0; i < 10; i++)
-	//	m_scene->AddInstance(new Instance(glm::vec3(i * 2, 0, 0),
-	//		glm::vec3(0, i * 30, 0), glm::vec3(1),
-	//		&m_spearMesh, &m_normalLitShader));
+	if (!OBJLoader("./soulspear/soulspear.obj", m_spearMesh, m_spearTransform, true))
+		return false;
 
-	
+	// Adding the multiple instances of the spears
+	for (int i = 0; i < 10; i++)
+		m_scene->AddInstance(new Instance(glm::vec3(i * 2, 0, 0),
+			glm::vec3(0, i * 30, 0), glm::vec3(1),
+			&m_spearMesh, &m_normalLitShader));
+
+#pragma endregion
 
 	return true;
 }
@@ -307,17 +292,6 @@ void aieProject3D1App::ImGUIRefresher()
 	ImGui::DragFloat("Sensitivity",
 		&m_camera.m_turnSpeed, 0.01, 0, 10);
 	ImGui::End();
-
-	ImGui::Begin("Material Settings");
-	ImGui::DragFloat3("Ambient Colour",
-		&v_ambient[0], 1, 0, 255);
-	ImGui::DragFloat3("Diffuse Colour",
-		&v_diffuse[0], 1, 0, 255);
-	ImGui::DragFloat3("Specular Colour",
-		&v_specular[0], 1, 0, 255);
-	ImGui::DragFloat("Specular Strength",
-		&v_specularStrength, 0.1, 1, 100);
-	ImGui::End();
 }
 
 bool aieProject3D1App::QuadLoader()
@@ -346,63 +320,16 @@ bool aieProject3D1App::QuadLoader()
 	return true;
 }
 
-bool aieProject3D1App::BunnyLoader()
+bool aieProject3D1App::OBJLoader(const char* filePath, aie::OBJMesh& mesh, 
+	glm::mat4& transform, bool loadTextures, glm::vec3 scale)
 {
-	m_colorShader.loadShader(aie::eShaderStage::VERTEX,
-		"./shaders/color.vert");
-	m_colorShader.loadShader(aie::eShaderStage::FRAGMENT,
-		"./shaders/color.frag");
-
-	if (m_colorShader.link() == false)
+	if (mesh.load(filePath, loadTextures, loadTextures) == false)
 	{
-		printf("Color Shader Error: %s\n", m_colorShader.getLastError());
+		printf("Mesh Error:\n");
 		return false;
 	}
 
-	if (m_bunnyMesh.load("./stanford/Bunny.obj") == false)
-	{
-		printf("Bunny Mesh Error:\n");
-		return false;
-	}
-
-
-	m_bunnyTransform = {
-		0.6f,0,0,0,
-		0,0.6f,0,0,
-		0,0,0.6f,0,
-		0, 0, 0, 1
-	};
-
-	return true;
-}
-
-bool aieProject3D1App::PhongLoader()
-{
-	if (m_spearMesh.load("./soulspear/soulspear.obj", true, true) == false)
-	{
-		printf("Spear Mesh Error:\n");
-		return false;
-	}
-
-	m_spearTransform = {
-		1,0,0,0,
-		0,1,0,0,
-		0,0,1,0,
-		0,0,0,1
-	};
-
-	return true;
-}
-
-bool aieProject3D1App::DatsunLoader()
-{
-	if (m_datsunMesh.load("./datsun-280z/source/Datsun_280Z.obj", true, true) == false)
-	{
-		printf("Spear Mesh Error:\n");
-		return false;
-	}
-
-	m_datsunTransform = {
+	transform = {
 		1,0,0,0,
 		0,1,0,0,
 		0,0,1,0,
@@ -432,42 +359,24 @@ bool aieProject3D1App::SpearLoader()
 
 bool aieProject3D1App::QuadTextureLoader() 
 {
-	m_texturedShader.loadShader(aie::eShaderStage::VERTEX,
-		"./shaders/textured.vert");
-	m_texturedShader.loadShader(aie::eShaderStage::FRAGMENT,
-		"./shaders/textured.frag");
-
-	if (m_texturedShader.link() == false)
-	{
-		printf("Textured Shader has an Error: %s\n", m_texturedShader.getLastError());
-		return false;
-	}
-
-	if (m_diffTexture.load("./soulspear/soulspear_diffuse.tga") == false)
-	{
-		printf("Failed to load the grid texture correctly!\n");
-		return false;
-	}
-	if (m_specTexture.load("./soulspear/soulspear_specular.tga") == false)
-	{
-		printf("Failed to load the grid texture correctly!\n");
-		return false;
-	}
-	if (m_normalTexture.load("./soulspear/soulspear_normal.tga") == false)
-	{
-		printf("Failed to load the grid texture correctly!\n");
-		return false;
-	}
-
-	m_quadMesh.InitialiseQuad();
-
-	m_quadTransform = {
-		10,0,0,0,
-		0,10,0,0,
-		0,0,10,0,
-		0,0,0,1
-	};
-
+	m_texturedShader.loadShader(aie::eShaderStage::VERTEX, "./shaders/textured.vert"); 
+	m_texturedShader.loadShader(aie::eShaderStage::FRAGMENT, "./shaders/textured.frag"); 
+	if (m_texturedShader.link() == false) 
+	{ 
+		printf("textured has an Error: %s\n", m_texturedShader.getLastError()); 
+		return false; 
+	} if (m_gridTexture.load("./textures/numbered_grid.tga") == false) 
+	{ 
+		printf("Failed to load the grid texture correctly!\n"); 
+	} 
+	m_quadMesh.InitialiseQuad(); 
+	// This is a 10 'unit' wide quad 
+	m_quadTransform = { 
+		10, 0, 0, 0, 
+		0, 10, 0, 0, 
+		0, 0, 10, 0, 
+		0, 0, 0, 1 
+	}; 
 	return true;
 }
 
@@ -516,12 +425,6 @@ void aieProject3D1App::PhongDraw(glm::mat4 pvm, glm::mat4 transform)
 	m_phongShader.bindUniform("LightColor", m_scene->GetLight().color / 255.f);
 	m_phongShader.bindUniform("AmbientColor", m_ambientLight / 255.f);
 
-	// Bind the material settings
-	m_phongShader.bindUniform("Ka", v_ambient / 255.f);
-	m_phongShader.bindUniform("Kd", v_diffuse / 255.f);
-	m_phongShader.bindUniform("Ks", v_specular / 255.f);
-	m_phongShader.bindUniform("specularPower", v_specularStrength);
-
 	// Bind the transform
 	m_phongShader.bindUniform("ProjectionViewModel", pvm);
 
@@ -534,34 +437,19 @@ void aieProject3D1App::PhongDraw(glm::mat4 pvm, glm::mat4 transform)
 
 void aieProject3D1App::QuadTexturedDraw(glm::mat4 pvm)
 {
-	// Bind the shader
-	m_texturedShader.bind();
+	// Bind the shader 
+	m_texturedShader.bind(); 
+	// Bind the transform 
 
-	// Bind the camera position
-	m_normalLitShader.bindUniform("CameraPosition",
-		glm::vec3(glm::inverse(m_viewMatrix)[3]));
+	m_texturedShader.bindUniform("ProjectionViewModel", pvm); 
+	// Bind the texture 
 
-	// Bind the light
-	m_normalLitShader.bindUniform("LightDirection", m_scene->GetLight().direction);
-	m_normalLitShader.bindUniform("LightColor", m_scene->GetLight().color / 255.f);
-	m_normalLitShader.bindUniform("AmbientColor", m_ambientLight / 255.f);
+	m_texturedShader.bindUniform("diffuseTexture", 0); 
+	// Bind the texture to a specific location 
+	//m_gridTexture.bind(0); 
+	m_renderTarget.getTarget(0).bind(0); 
 
-	// Bind the transform
-	m_texturedShader.bindUniform("ProjectionViewModel", pvm);
-
-	// Bind the texture location
-	m_texturedShader.bindUniform("diffuseTexture", 0);
-	m_texturedShader.bindUniform("specularTexture", 1);
-	m_texturedShader.bindUniform("normalTexture", 2);
-
-	m_normalLitShader.bindUniform("ModelMatrix", m_quadTransform);
-
-	// Bind the texture to a specific location
-	m_diffTexture.bind(0);
-	m_specTexture.bind(1);
-	m_normalTexture.bind(2);
-
-	// Draw the quad using Mesh's draw
+	// Draw the quad using Mesh's draw 
 	m_quadMesh.Draw();
 }
 
@@ -589,32 +477,4 @@ void aieProject3D1App::OBJDraw(glm::mat4& pv, glm::mat4& transform, aie::OBJMesh
 
 	// Draw the quad using Mesh's draw
 	objMesh->draw();
-}
-
-
-
-void aieProject3D1App::DatsunDraw(glm::mat4 pvm, glm::mat4 transform)
-{
-	// Bind the shader
-	m_normalLitShader.bind();
-
-	// Bind the camera position
-	m_normalLitShader.bindUniform("CameraPosition",
-		glm::vec3(glm::inverse(m_viewMatrix)[3]));
-
-	// Bind the light
-	m_normalLitShader.bindUniform("LightDirection", m_scene->GetLight().direction);
-	m_normalLitShader.bindUniform("LightColor", m_scene->GetLight().color / 255.f);
-	m_normalLitShader.bindUniform("AmbientColor", m_ambientLight / 255.f);
-
-	m_normalLitShader.bindUniform("diffuseTexture", 0);
-
-	// Bind the transform
-	m_normalLitShader.bindUniform("ProjectionViewModel", pvm);
-
-	// Bind the model matrix
-	m_normalLitShader.bindUniform("ModelMatrix", m_datsunTransform);
-
-	// Draw the quad using Mesh's draw
-	m_datsunMesh.draw();
 }

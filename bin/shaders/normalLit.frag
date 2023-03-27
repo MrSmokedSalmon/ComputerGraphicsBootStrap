@@ -57,7 +57,7 @@ void main()
     vec3 texSpecular = texture(specularTexture, vTexCoord).rgb;
     vec3 texNormal = texture(normalTexture, vTexCoord).rgb;
 
-    N = TBN * (texNormal * 2 - 1);
+    N = normalize(TBN * (texNormal * 2 - 1));
 
     // Lambert term, with L reveresed to face towards the light
     float lambertTerm = max(0, min(1, dot(N, -L)));
