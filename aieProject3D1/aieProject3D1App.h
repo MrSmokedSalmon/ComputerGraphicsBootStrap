@@ -8,6 +8,7 @@
 #include "Mesh.h"
 #include "Space.h"
 #include "OBJMesh.h"
+#include "ParticleEmitter.h"
 
 #include "FlyCamera.h"
 #include "StationaryCamera.h"
@@ -50,6 +51,8 @@ protected:
 
 	void ImGUIRefresher();
 
+
+
 	Scene* m_scene;
 
 	//Space* space;
@@ -65,12 +68,12 @@ protected:
 	aie::ShaderProgram	m_phongShader;
 	aie::ShaderProgram	m_texturedShader;
 	aie::ShaderProgram	m_normalLitShader;
+	aie::ShaderProgram	m_particleShader;
 
 	aie::ShaderProgram	m_postProcessShader;
 	int m_ppEffect = -1;
 
 	aie::RenderTarget m_renderTarget;
-
 
 	Mesh				m_quadMesh;
 	Mesh				m_fullScreenQuad;
@@ -82,9 +85,18 @@ protected:
 	aie::OBJMesh		m_spearMesh;
 	glm::mat4			m_spearTransform;
 
-	glm::vec3 m_ambientLight;
+	glm::vec3			m_ambientLight;
 
-	FlyCamera m_camera;
+	glm::vec2			m_mousePos;
+
+	int					m_blurAmount = 5;
+	int					m_distortAmount = 15;
+	float				m_edgeAmount = 2.0f;
+
+	FlyCamera			m_camera;
 	//StationaryCamera m_camera;
 	//glm::vec3 stationaryRotation;
+
+	ParticleEmitter*	m_emitter;
+	glm::mat4			m_particleEmitTransform;
 };

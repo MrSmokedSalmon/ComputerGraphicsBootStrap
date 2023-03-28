@@ -7,6 +7,13 @@
 #include <imgui.h>
 #include <string>
 
+#define PPE_BLUR_MAX 15
+#define PPE_BLUR_MIN 0
+#define PPE_DISTORT_MAX 45
+#define PPE_DISTORT_MIN 0
+#define PPE_EDGE_MAX 20.0f
+#define PPE_EDGE_MIN 0.0f
+
 using glm::vec3;
 using glm::vec4;
 using glm::mat4;
@@ -37,6 +44,10 @@ bool aieProject3D1App::startup() {
 	Light light;
 	light.color = { 1,1,1 };
 	light.direction = { 1,-1,1 };
+
+	m_emitter = new ParticleEmitter();
+	m_emitter->Initialise(1000, 500, 0.1f, 1.0f, 
+		1, 5, 1, 0.1f, glm::vec4(1, 0, 0, 1), glm::vec4(0, 1, 0, 1));
 
 	m_scene = new Scene(&m_camera, glm::vec2(getWindowWidth(), getWindowHeight()),
 		light, m_ambientLight);
@@ -79,12 +90,17 @@ void aieProject3D1App::update(float deltaTime) {
 	// quit if we press escape
 	aie::Input* input = aie::Input::getInstance();
 
+	m_mousePos = glm::vec2(input->getMouseX(), input->getMouseY());
+
 	m_bunnyTransform = glm::rotate(m_bunnyTransform, glm::radians<float>(0.1f), glm::vec3(0, 1, 0));
+
 
 	// Rotate the light to emulate a 'day/night' cycle
 	m_scene->GetLight().direction = glm::normalize(glm::vec3(glm::cos(time * 2), glm::sin(time * 2), 0));
 
 	m_camera.Update(deltaTime);
+	m_emitter->Update(deltaTime, m_scene->GetCamera()->GetTransform(
+			m_camera.GetPosition(), glm::vec3(0), glm::vec3(1)));
 
 	if (input->isKeyDown(aie::INPUT_KEY_ESCAPE))
 		quit();
@@ -104,20 +120,32 @@ void aieProject3D1App::draw()
 	float time = getTime();
 
 	m_scene->Draw();
+
+	m_particleShader.bind();
+	m_particleShader.bindUniform("ProjectionViewModel", pv * m_particleEmitTransform);
+	m_emitter->Draw();
+
 	Gizmos::draw(pv);
 
 	m_renderTarget.unbind();
 
 	clearScreen();
 
-	//m_scene->Draw();
-	//QuadTexturedDraw(pv * m_quadTransform);
-
 	// Bind the Post-Processing Shader and the texture
 	m_postProcessShader.bind();
 	m_postProcessShader.bindUniform("colorTarget", 0);
 	m_postProcessShader.bindUniform("postProcessTarget", m_ppEffect);
+	m_postProcessShader.bindUniform("ProjectionViewModel", pv);
+
+	m_postProcessShader.bindUniform("windowWidth", (int)getWindowWidth());
+	m_postProcessShader.bindUniform("windowHeight", (int)getWindowHeight());
+
+	m_postProcessShader.bindUniform("blurAmount", m_blurAmount);
+	m_postProcessShader.bindUniform("distortAmount", m_distortAmount);
+	m_postProcessShader.bindUniform("edgeAmount", m_edgeAmount);
 	m_renderTarget.getTarget(0).bind(0);
+
+	
 
 	m_fullScreenQuad.Draw();
 }
@@ -155,8 +183,26 @@ bool aieProject3D1App::LaunchShaders()
 		printf("Post-Process Shader Error: %s\n", m_postProcessShader.getLastError());
 		return false;
 	}
+
+	m_particleShader.loadShader(aie::eShaderStage::VERTEX,
+		"./shaders/particle.vert");
+	m_particleShader.loadShader(aie::eShaderStage::FRAGMENT,
+		"./shaders/particle.frag");
+
+	if (m_particleShader.link() == false)
+	{
+		printf("Particle Shader Error: %s\n", m_particleShader.getLastError());
+		return false;
+	}
 #pragma endregion
 	
+	m_particleEmitTransform = {
+		1,0,0,0,
+		0,1,0,0,
+		0,0,1,0,
+		0,0,0,1
+	};
+
 	if (!QuadTextureLoader())
 		return false;
 
@@ -250,12 +296,6 @@ void aieProject3D1App::CreateSphere(Mesh& mesh)
 		}
 		angleX += 360.0f / 8.f;
 	}
-	//vertices[64].position = {}
-
-	//for (int i = 0; i < 64; i++)
-	//{
-	//
-	//}
 
 	unsigned int indices[36] =
 	{
@@ -311,9 +351,8 @@ void aieProject3D1App::ImGUIRefresher()
 				&m_camera.m_moveSpeed, 0.1, 0.1, 10);
 			ImGui::DragFloat("Sensitivity",
 				&m_camera.m_turnSpeed, 0.01, 0, 10);
-
-
 		}
+
 		if (ImGui::CollapsingHeader("Test2"))
 		{
 			ImGui::DragFloat3("Global Light Direction",
@@ -323,10 +362,51 @@ void aieProject3D1App::ImGUIRefresher()
 			ImGui::DragFloat3("Ambient Light Color",
 				&m_ambientLight[0], 1, 0, 255);
 		}
+
 		if (ImGui::CollapsingHeader("Post Processing"))
 		{
+			{ // No Post-Processing Effect
+				if (ImGui::Button("Default", { 100, 25 }))
+				{
+					m_ppEffect = -1;
+				}
+			}
+
+			{ // Blur Effect UI
+				if (ImGui::Button("Blur", { 100, 25 }))
+				{
+					m_ppEffect = 0;
+				}
+				if (m_ppEffect == 0 && ImGui::CollapsingHeader("Blur Settings"))
+				{
+					ImGui::SliderInt("Blur Amount", &m_blurAmount, PPE_BLUR_MIN, PPE_BLUR_MAX);
+				}
+			}
+
+			{ // Distort Effect UI
+				if (ImGui::Button("Distort", { 100, 25 }))
+				{
+					m_ppEffect = 1;
+				}
+				if (m_ppEffect == 1 && ImGui::CollapsingHeader("Distort Settings"))
+				{
+					ImGui::SliderInt("Distort Amount", &m_distortAmount, PPE_DISTORT_MIN, PPE_DISTORT_MAX);
+				}
+			}
+
+			{ // Edge Detection Effect UI
+				if (ImGui::Button("Edge Detection", { 100, 25 }))
+				{
+					m_ppEffect = 2;
+				}
+				if (m_ppEffect == 2 && ImGui::CollapsingHeader("Edge Detection Settings"))
+				{
+					ImGui::SliderFloat("Edge Detection Amount", &m_edgeAmount, PPE_DISTORT_MIN, PPE_DISTORT_MAX);
+				}
+			}
+
 			ImGui::InputInt("Processing Effect",
-				&m_ppEffect, 1, -1, 12);
+				&m_ppEffect, 1);
 		}
 	}
 	ImGui::End();
