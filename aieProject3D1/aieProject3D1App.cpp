@@ -110,14 +110,24 @@ void aieProject3D1App::update(float deltaTime) {
 
 void aieProject3D1App::draw() 
 {
+	auto pv = m_camera.GetProjectionViewMatrix();
+
+	float time = getTime();
+
+	// Renders a distance texture to a texture buffer to be used in further rendering techniques
+	m_distanceBuffer.bind();
+
+	clearScreen();
+
+	m_distanceShader.bind();
+	m_distanceShader.bindUniform("ProjectionViewModel", pv);
+
+	m_distanceBuffer.unbind();
+
 	m_renderTarget.bind();
 
 	// wipe the screen to the background colour
 	clearScreen();
-
-	auto pv = m_camera.GetProjectionViewMatrix();
-
-	float time = getTime();
 
 	m_scene->Draw();
 

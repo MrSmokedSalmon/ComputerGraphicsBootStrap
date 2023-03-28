@@ -69,11 +69,13 @@ protected:
 	aie::ShaderProgram	m_texturedShader;
 	aie::ShaderProgram	m_normalLitShader;
 	aie::ShaderProgram	m_particleShader;
+	aie::ShaderProgram	m_distanceShader;
 
 	aie::ShaderProgram	m_postProcessShader;
 	int m_ppEffect = -1;
 
 	aie::RenderTarget m_renderTarget;
+	aie::RenderTarget m_distanceBuffer;
 
 	Mesh				m_quadMesh;
 	Mesh				m_fullScreenQuad;

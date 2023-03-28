@@ -13,5 +13,7 @@ out vec4 FragColor;
 void main(){
     float dist = distance(CameraPosition, vPosition.xyz);
 
+    color = 1.0/dist;
+
     FragColor = vec4( dist, dist, dist, 1);
 }
