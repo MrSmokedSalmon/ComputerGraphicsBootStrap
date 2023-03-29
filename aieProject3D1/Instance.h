@@ -21,6 +21,7 @@ public:
 	~Instance() {};
 
 	void Draw(Scene* scene);
+	void DrawDepth(Scene* scene, aie::ShaderProgram* shader);
 
 	static glm::mat4 MakeTransform(glm::vec3 position, glm::vec3 eulerAngles, 
 								   glm::vec3 scale);

@@ -37,3 +37,19 @@ void Scene::Draw()
 		instance->Draw(this);
 	}
 }
+
+void Scene::DrawDepth(aie::ShaderProgram* shader)
+{
+	for (int i = 0; i < MAX_LIGHTS && i < m_pointLights.size(); i++)
+	{
+		m_pointLightPositions[i] = m_pointLights[i].direction;
+		m_pointLightColors[i] = m_pointLights[i].color;
+	}
+
+	for (auto it = m_instances.begin();
+		it != m_instances.end(); it++)
+	{
+		Instance* instance = *it;
+		instance->DrawDepth(this, shader);
+	}
+}

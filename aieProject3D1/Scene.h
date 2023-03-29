@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Shader.h"
+
 #include <glm/glm.hpp>
 #include <vector>
 #include <list>
@@ -36,6 +38,7 @@ public:
 	void AddInstance(Instance* instance);
 
 	void Draw();
+	void DrawDepth(aie::ShaderProgram* shader);
 	void AddPointLights(Light light) { m_pointLights.push_back(light); }
 	void AddPointLights(glm::vec3 direction, glm::vec3 color, float intensity) 
 	{ 

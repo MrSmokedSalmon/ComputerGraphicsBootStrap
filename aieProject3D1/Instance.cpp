@@ -46,6 +46,23 @@ void Instance::Draw(Scene* scene)
 	m_mesh->draw();
 }
 
+void Instance::DrawDepth(Scene* scene, aie::ShaderProgram* shader)
+{
+	// Set the shader pipeline
+	shader->bind();
+
+	// Bind all relevant uniforms for our shaders
+	auto pvm = scene->GetCamera()->GetProjectionViewMatrix() * m_transform;
+	shader->bindUniform("ProjectionViewModel", pvm);
+	shader->bindUniform("ModelMatrix", m_transform);
+
+
+	// Bind the camera position
+	shader->bindUniform("CameraPosition", scene->GetCamera()->GetPosition());
+
+	m_mesh->draw();
+}
+
 glm::mat4 Instance::MakeTransform(glm::vec3 position, glm::vec3 eulerAngles, glm::vec3 scale)
 {
 	return glm::translate(glm::mat4(1), position)

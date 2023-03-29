@@ -3,10 +3,11 @@
 
 layout(location = 4) in vec4 gl_FragCoord;
 
-in vec4 vPosition;
+//in vec4 vPosition;
 in vec2 vTexCoord;
 
 uniform sampler2D colorTarget;
+uniform sampler2D depthTarget;
 uniform int postProcessTarget;
 
 uniform int windowWidth;
@@ -15,6 +16,10 @@ uniform int windowHeight;
 uniform int blurAmount;
 uniform int distortAmount;
 uniform float edgeAmount;
+uniform float fogAmount;
+
+uniform float minDOF;
+uniform float maxDOF;
 
 out vec4 FragColor;
 
@@ -152,9 +157,9 @@ vec4 Posterize(vec2 texCoord) {
     return vec4(color, 1.0f);
 }
 
-//vec4 DepthOfField(vec2 texCoord) {
-//    
-//}
+vec4 SimpleDepthFog(vec2 texCoord) {
+    return vec4((texture(depthTarget, texCoord)).xyz, 1.0) * fogAmount;
+}
 
 void main() 
 {
@@ -216,12 +221,17 @@ void main()
         }
         case 9: // Distance Fog
         {
-            FragColor = Default(texCoord);
+            FragColor = SimpleDepthFog(texCoord) + Default(texCoord);
             break;
         }
         case 10: // Depth of Field
         {
             FragColor = Default(texCoord);
+            break;
+        }
+        case 11: // Depth Texture
+        {
+            FragColor = texture(depthTarget, texCoord);
             break;
         }
         default:

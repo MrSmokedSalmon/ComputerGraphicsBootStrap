@@ -13,6 +13,8 @@
 #define PPE_DISTORT_MIN 0
 #define PPE_EDGE_MAX 20.0f
 #define PPE_EDGE_MIN 0.0f
+#define PPE_FOG_MAX 2.0f
+#define PPE_FOG_MIN 0.0f
 
 using glm::vec3;
 using glm::vec4;
@@ -119,8 +121,7 @@ void aieProject3D1App::draw()
 
 	clearScreen();
 
-	m_distanceShader.bind();
-	m_distanceShader.bindUniform("ProjectionViewModel", pv);
+	m_scene->DrawDepth(&m_distanceShader);
 
 	m_distanceBuffer.unbind();
 
@@ -144,8 +145,8 @@ void aieProject3D1App::draw()
 	// Bind the Post-Processing Shader and the texture
 	m_postProcessShader.bind();
 	m_postProcessShader.bindUniform("colorTarget", 0);
+	m_postProcessShader.bindUniform("depthTarget", 1);
 	m_postProcessShader.bindUniform("postProcessTarget", m_ppEffect);
-	m_postProcessShader.bindUniform("ProjectionViewModel", pv);
 
 	m_postProcessShader.bindUniform("windowWidth", (int)getWindowWidth());
 	m_postProcessShader.bindUniform("windowHeight", (int)getWindowHeight());
@@ -153,7 +154,9 @@ void aieProject3D1App::draw()
 	m_postProcessShader.bindUniform("blurAmount", m_blurAmount);
 	m_postProcessShader.bindUniform("distortAmount", m_distortAmount);
 	m_postProcessShader.bindUniform("edgeAmount", m_edgeAmount);
+	m_postProcessShader.bindUniform("fogAmount", m_fogAmount);
 	m_renderTarget.getTarget(0).bind(0);
+	m_distanceBuffer.getTarget(0).bind(1);
 
 	
 
@@ -166,6 +169,12 @@ bool aieProject3D1App::LaunchShaders()
 		getWindowHeight()) == false)
 	{
 		printf("Render Target Error!:\n");
+		return false;
+	}
+	if (m_distanceBuffer.initialise(1, getWindowWidth(),
+		getWindowHeight()) == false)
+	{
+		printf("Distance Buffer Error!:\n");
 		return false;
 	}
 
@@ -202,6 +211,17 @@ bool aieProject3D1App::LaunchShaders()
 	if (m_particleShader.link() == false)
 	{
 		printf("Particle Shader Error: %s\n", m_particleShader.getLastError());
+		return false;
+	}
+
+	m_distanceShader.loadShader(aie::eShaderStage::VERTEX,
+		"./shaders/depth.vert");
+	m_distanceShader.loadShader(aie::eShaderStage::FRAGMENT,
+		"./shaders/depth.frag");
+
+	if (m_distanceShader.link() == false)
+	{
+		printf("Depth Shader Error: %s\n", m_distanceShader.getLastError());
 		return false;
 	}
 #pragma endregion
@@ -411,7 +431,18 @@ void aieProject3D1App::ImGUIRefresher()
 				}
 				if (m_ppEffect == 2 && ImGui::CollapsingHeader("Edge Detection Settings"))
 				{
-					ImGui::SliderFloat("Edge Detection Amount", &m_edgeAmount, PPE_DISTORT_MIN, PPE_DISTORT_MAX);
+					ImGui::SliderFloat("Edge Detection Amount", &m_edgeAmount, PPE_EDGE_MIN, PPE_EDGE_MAX);
+				}
+			}
+
+			{ // Depth Fog Effect UI
+				if (ImGui::Button("Distance Fog", { 100, 25 }))
+				{
+					m_ppEffect = 9;
+				}
+				if (m_ppEffect == 9 && ImGui::CollapsingHeader("Distance Fog Settings"))
+				{
+					ImGui::SliderFloat("Fog Amount", &m_fogAmount, PPE_FOG_MIN, PPE_FOG_MAX);
 				}
 			}
 
