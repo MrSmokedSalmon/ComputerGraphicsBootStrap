@@ -174,79 +174,72 @@ void main()
     vec2 texCoord = vTexCoord / scale + texelSize * 0.5f;
 
     // Output post process effect here
-    if (firstPass)
+    switch (postProcessTarget)
     {
-        FragColor = BoxBlur(texCoord);
-    }
-    else
-    {
-        switch (postProcessTarget)
+        case 0: // Box Blur
         {
-            case 0: // Box Blur
-            {
-                FragColor = BoxBlur(texCoord);
-                break;
-            }
-            case 1: // Distort
-            {
-                FragColor = Distort(texCoord);
-                break;
-            }
-            case 2: // Edge Detection
-            {
-                FragColor = EdgeDetection(texCoord);
-                break;
-            }
-            case 3: // Sepia
-            {
-                FragColor = Sepia(texCoord);
-                break;
-            }
-            case 4: // Scanlines
-            {
-                FragColor = Default(texCoord);
-                break;
-            }
-            case 5: // Grey Scale
-            {
-                FragColor = GreyScale(texCoord);
-                break;
-            }
-            case 6: // Invert
-            {
-                FragColor = Invert(texCoord);
-                break;
-            }
-            case 7: // Pixelizer
-            {
-                FragColor = Pixelizer(texCoord);
-                break;
-            }
-            case 8: // Posterization
-            {
-                FragColor = Posterize(texCoord);
-                break;
-            }
-            case 9: // Distance Fog
-            {
-                FragColor = SimpleDepthFog(texCoord) + Default(texCoord);
-                break;
-            }
-            case 10: // Depth of Field
-            {
-                FragColor = Default(texCoord);
-                break;
-            }
-            case 11: // Depth Texture
-            {
-                FragColor = texture(depthTarget, texCoord);
-                break;
-            }
-            default:
-            {
-                FragColor = Default(texCoord);
-                break;
-            }
+            FragColor = BoxBlur(texCoord);
+            break;
+        }
+        case 1: // Distort
+        {
+            FragColor = Distort(texCoord);
+            break;
+        }
+        case 2: // Edge Detection
+        {
+            FragColor = EdgeDetection(texCoord);
+            break;
+        }
+        case 3: // Sepia
+        {
+            FragColor = Sepia(texCoord);
+            break;
+        }
+        case 4: // Scanlines
+        {
+            FragColor = Default(texCoord);
+            break;
+        }
+        case 5: // Grey Scale
+        {
+            FragColor = GreyScale(texCoord);
+            break;
+        }
+        case 6: // Invert
+        {
+            FragColor = Invert(texCoord);
+            break;
+        }
+        case 7: // Pixelizer
+        {
+            FragColor = Pixelizer(texCoord);
+            break;
+        }
+        case 8: // Posterization
+        {
+            FragColor = Posterize(texCoord);
+            break;
+        }
+        case 9: // Distance Fog
+        {
+            FragColor = SimpleDepthFog(texCoord) + Default(texCoord);
+            break;
+        }
+        case 10: // Depth of Field
+        {
+            FragColor = Default(texCoord);
+            break;
+        }
+        case 11: // Depth Texture
+        {
+            FragColor = texture(depthTarget, texCoord);
+            break;
+        }
+        default:
+        {
+            FragColor = Default(texCoord);
+            break;
         }
     }
 }

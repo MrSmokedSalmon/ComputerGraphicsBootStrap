@@ -155,7 +155,6 @@ void aieProject3D1App::draw()
 	m_postProcessShader.bindUniform("pixelSize", (float)m_pixelSize + 1);
 	m_postProcessShader.bindUniform("maxColors", (float)m_maxColors + 1);
 	m_postProcessShader.bindUniform("fogAmount", m_fogAmount);
-	m_postProcessShader.bindUniform("focalPoint", m_focalPoint);
 
 	m_renderTarget.getTarget(0).bind(0);
 	m_distanceBuffer.getTarget(0).bind(1);
@@ -470,7 +469,7 @@ void aieProject3D1App::ImGUIRefresher()
 				}
 				if (m_ppEffect == 7 && ImGui::CollapsingHeader("Pixel Settings"))
 				{
-					ImGui::SliderInt("Pixel Size", &m_pixelSize, PPE_EDGE_MIN, PPE_EDGE_MAX);
+					ImGui::SliderInt("Pixel Size", &m_pixelSize, 0, 50);
 				}
 			}
 
