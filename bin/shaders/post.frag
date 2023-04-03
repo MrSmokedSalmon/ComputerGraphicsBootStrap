@@ -16,10 +16,15 @@ uniform int windowHeight;
 uniform int blurAmount;
 uniform int distortAmount;
 uniform float edgeAmount;
+uniform float pixelSize;
+uniform float maxColors;
 uniform float fogAmount;
+uniform float focalPoint;
 
 uniform float minDOF;
 uniform float maxDOF;
+
+uniform bool firstPass;
 
 out vec4 FragColor;
 
@@ -131,8 +136,6 @@ vec4 Invert(vec2 texCoord) {
 }
 
 vec4 Pixelizer(vec2 texCoord) {
-    float pixelSize = 15.0f;
-
     float dx = pixelSize * (1.0f/windowWidth);
     float dy = pixelSize * (1.0f/windowHeight);
 
@@ -144,14 +147,13 @@ vec4 Pixelizer(vec2 texCoord) {
 
 vec4 Posterize(vec2 texCoord) {
     float gamma = 0.7f;
-    float numColors = 7.0f;
 
     vec3 color = texture(colorTarget, texCoord).xyz;
 
     color = pow(color, vec3(gamma));
-    color = color * numColors;
+    color = color * maxColors;
     color = floor(color);
-    color = color / numColors;
+    color = color / maxColors;
     color = pow(color, vec3(1.0f/gamma));
 
     return vec4(color, 1.0f);
@@ -172,72 +174,79 @@ void main()
     vec2 texCoord = vTexCoord / scale + texelSize * 0.5f;
 
     // Output post process effect here
-    switch (postProcessTarget)
+    if (firstPass)
     {
-        case 0: // Box Blur
+        FragColor = BoxBlur(texCoord);
+    }
+    else
+    {
+        switch (postProcessTarget)
         {
-            FragColor = BoxBlur(texCoord);
-            break;
-        }
-        case 1: // Distort
-        {
-            FragColor = Distort(texCoord);
-            break;
-        }
-        case 2: // Edge Detection
-        {
-            FragColor = EdgeDetection(texCoord);
-            break;
-        }
-        case 3: // Sepia
-        {
-            FragColor = Sepia(texCoord);
-            break;
-        }
-        case 4: // Scanlines
-        {
-            FragColor = Default(texCoord);
-            break;
-        }
-        case 5: // Grey Scale
-        {
-            FragColor = GreyScale(texCoord);
-            break;
-        }
-        case 6: // Invert
-        {
-            FragColor = Invert(texCoord);
-            break;
-        }
-        case 7: // Pixelizer
-        {
-            FragColor = Pixelizer(texCoord);
-            break;
-        }
-        case 8: // Posterization
-        {
-            FragColor = Posterize(texCoord);
-            break;
-        }
-        case 9: // Distance Fog
-        {
-            FragColor = SimpleDepthFog(texCoord) + Default(texCoord);
-            break;
-        }
-        case 10: // Depth of Field
-        {
-            FragColor = Default(texCoord);
-            break;
-        }
-        case 11: // Depth Texture
-        {
-            FragColor = texture(depthTarget, texCoord);
-            break;
-        }
-        default:
-        {
-            FragColor = Default(texCoord);
-            break;
+            case 0: // Box Blur
+            {
+                FragColor = BoxBlur(texCoord);
+                break;
+            }
+            case 1: // Distort
+            {
+                FragColor = Distort(texCoord);
+                break;
+            }
+            case 2: // Edge Detection
+            {
+                FragColor = EdgeDetection(texCoord);
+                break;
+            }
+            case 3: // Sepia
+            {
+                FragColor = Sepia(texCoord);
+                break;
+            }
+            case 4: // Scanlines
+            {
+                FragColor = Default(texCoord);
+                break;
+            }
+            case 5: // Grey Scale
+            {
+                FragColor = GreyScale(texCoord);
+                break;
+            }
+            case 6: // Invert
+            {
+                FragColor = Invert(texCoord);
+                break;
+            }
+            case 7: // Pixelizer
+            {
+                FragColor = Pixelizer(texCoord);
+                break;
+            }
+            case 8: // Posterization
+            {
+                FragColor = Posterize(texCoord);
+                break;
+            }
+            case 9: // Distance Fog
+            {
+                FragColor = SimpleDepthFog(texCoord) + Default(texCoord);
+                break;
+            }
+            case 10: // Depth of Field
+            {
+                FragColor = Default(texCoord);
+                break;
+            }
+            case 11: // Depth Texture
+            {
+                FragColor = texture(depthTarget, texCoord);
+                break;
+            }
+            default:
+            {
+                FragColor = Default(texCoord);
+                break;
+            }
         }
     }
 }

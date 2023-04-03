@@ -94,7 +94,10 @@ protected:
 	int					m_blurAmount = 5;
 	int					m_distortAmount = 15;
 	float				m_edgeAmount = 2.0f;
+	int					m_pixelSize = 15;
+	int					m_maxColors = 15;
 	float				m_fogAmount = 2.0f;
+	float				m_focalPoint = 2.0f;
 
 	FlyCamera			m_camera;
 	//StationaryCamera m_camera;

@@ -115,8 +115,7 @@ void aieProject3D1App::draw()
 	auto pv = m_camera.GetProjectionViewMatrix();
 
 	float time = getTime();
-
-	// Renders a distance texture to a texture buffer to be used in further rendering techniques
+	
 	m_distanceBuffer.bind();
 
 	clearScreen();
@@ -126,7 +125,6 @@ void aieProject3D1App::draw()
 	m_distanceBuffer.unbind();
 
 	m_renderTarget.bind();
-
 	// wipe the screen to the background colour
 	clearScreen();
 
@@ -154,11 +152,13 @@ void aieProject3D1App::draw()
 	m_postProcessShader.bindUniform("blurAmount", m_blurAmount);
 	m_postProcessShader.bindUniform("distortAmount", m_distortAmount);
 	m_postProcessShader.bindUniform("edgeAmount", m_edgeAmount);
+	m_postProcessShader.bindUniform("pixelSize", (float)m_pixelSize + 1);
+	m_postProcessShader.bindUniform("maxColors", (float)m_maxColors + 1);
 	m_postProcessShader.bindUniform("fogAmount", m_fogAmount);
+	m_postProcessShader.bindUniform("focalPoint", m_focalPoint);
+
 	m_renderTarget.getTarget(0).bind(0);
 	m_distanceBuffer.getTarget(0).bind(1);
-
-	
 
 	m_fullScreenQuad.Draw();
 }
@@ -168,13 +168,13 @@ bool aieProject3D1App::LaunchShaders()
 	if (m_renderTarget.initialise(1, getWindowWidth(),
 		getWindowHeight()) == false)
 	{
-		printf("Render Target Error!:\n");
+		printf("Render Target 1 Error!:\n");
 		return false;
 	}
 	if (m_distanceBuffer.initialise(1, getWindowWidth(),
 		getWindowHeight()) == false)
 	{
-		printf("Distance Buffer Error!:\n");
+		printf("Depth Target Error!:\n");
 		return false;
 	}
 
@@ -396,14 +396,14 @@ void aieProject3D1App::ImGUIRefresher()
 		if (ImGui::CollapsingHeader("Post Processing"))
 		{
 			{ // No Post-Processing Effect
-				if (ImGui::Button("Default", { 100, 25 }))
+				if (ImGui::Button("Default", { 200, 25 }))
 				{
 					m_ppEffect = -1;
 				}
 			}
 
 			{ // Blur Effect UI
-				if (ImGui::Button("Blur", { 100, 25 }))
+				if (ImGui::Button("Blur", { 200, 25 }))
 				{
 					m_ppEffect = 0;
 				}
@@ -414,7 +414,7 @@ void aieProject3D1App::ImGUIRefresher()
 			}
 
 			{ // Distort Effect UI
-				if (ImGui::Button("Distort", { 100, 25 }))
+				if (ImGui::Button("Distort", { 200, 25 }))
 				{
 					m_ppEffect = 1;
 				}
@@ -425,7 +425,7 @@ void aieProject3D1App::ImGUIRefresher()
 			}
 
 			{ // Edge Detection Effect UI
-				if (ImGui::Button("Edge Detection", { 100, 25 }))
+				if (ImGui::Button("Edge Detection", { 200, 25 }))
 				{
 					m_ppEffect = 2;
 				}
@@ -435,14 +435,75 @@ void aieProject3D1App::ImGUIRefresher()
 				}
 			}
 
+			{ // Sepia
+				if (ImGui::Button("Sepia", { 200, 25 }))
+				{
+					m_ppEffect = 3;
+				}
+			}
+
+			{ // Scanlines - not implemented
+				if (ImGui::Button("Scanlines (Not Implemented)", { 200, 25 }))
+				{
+					m_ppEffect = 4;
+				}
+			}
+
+			{ // Grey Scale
+				if (ImGui::Button("Grey Scale", { 200, 25 }))
+				{
+					m_ppEffect = 5;
+				}
+			}
+
+			{ // Invert
+				if (ImGui::Button("Invert", { 200, 25 }))
+				{
+					m_ppEffect = 6;
+				}
+			}
+
+			{ // Pixelizer
+				if (ImGui::Button("Pixelizer", { 200, 25 }))
+				{
+					m_ppEffect = 7;
+				}
+				if (m_ppEffect == 7 && ImGui::CollapsingHeader("Pixel Settings"))
+				{
+					ImGui::SliderInt("Pixel Size", &m_pixelSize, PPE_EDGE_MIN, PPE_EDGE_MAX);
+				}
+			}
+
+			{ // Posturization
+				if (ImGui::Button("Posturization", { 200, 25 }))
+				{
+					m_ppEffect = 8;
+				}
+				if (m_ppEffect == 8 && ImGui::CollapsingHeader("Posturization Settings"))
+				{
+					ImGui::SliderInt("Number of Colours", &m_maxColors, PPE_EDGE_MIN, PPE_EDGE_MAX);
+				}
+			}
+
 			{ // Depth Fog Effect UI
-				if (ImGui::Button("Distance Fog", { 100, 25 }))
+				if (ImGui::Button("Distance Fog", { 200, 25 }))
 				{
 					m_ppEffect = 9;
 				}
 				if (m_ppEffect == 9 && ImGui::CollapsingHeader("Distance Fog Settings"))
 				{
 					ImGui::SliderFloat("Fog Amount", &m_fogAmount, PPE_FOG_MIN, PPE_FOG_MAX);
+				}
+			}
+
+			{ // Depth of Field - not implemented
+				if (ImGui::Button("Depth of Field (Not Implemented)", { 200, 25 }))
+				{
+					m_ppEffect = 10;
+				}
+				if (m_ppEffect == 10 && ImGui::CollapsingHeader("DOF Settings"))
+				{
+					ImGui::SliderFloat("Focal Point", &m_focalPoint, PPE_FOG_MIN, PPE_FOG_MAX);
 				}
 			}
 
@@ -543,9 +604,10 @@ void aieProject3D1App::QuadTexturedDraw(glm::mat4 pvm)
 	// Bind the texture 
 
 	m_texturedShader.bindUniform("diffuseTexture", 0); 
+
 	// Bind the texture to a specific location 
 	//m_gridTexture.bind(0); 
-	m_renderTarget.getTarget(0).bind(0); 
+	m_renderTarget.getTarget(0).bind(0);
 
 	// Draw the quad using Mesh's draw 
 	m_quadMesh.Draw();
