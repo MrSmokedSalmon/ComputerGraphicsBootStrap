@@ -242,6 +242,22 @@ bool aieProject3D1App::LaunchShaders()
 	if (!OBJLoader("./soulspear/soulspear.obj", m_spearMesh, m_spearTransform, true))
 		return false;
 
+	m_r2Transform =
+	{
+		0.1,0,0,0,
+		0,0.1,0,0,
+		0,0,0.1,0,
+		0,0,0,1
+	};
+
+	if (!OBJLoader("./r2d2/R2-Unit.obj", m_r2Mesh, m_r2Transform, true))
+		return false;
+
+
+
+	// Adding single instance of the gun
+	m_scene->AddInstance(new Instance(glm::vec3(0, 1, 4), glm::vec3(0), glm::vec3(1), &m_r2Mesh, &m_normalLitShader));
+
 	// Adding the multiple instances of the spears
 	for (int i = 0; i < 10; i++)
 		m_scene->AddInstance(new Instance(glm::vec3(i * 2, 0, 0),
@@ -364,11 +380,14 @@ void aieProject3D1App::ImGUIRefresher()
 
 	ImGui::Begin("Light Settings");
 	{
-		if (ImGui::CollapsingHeader("Test"))
+		if (ImGui::CollapsingHeader("Camera"))
 
 		{
 			ImGui::DragFloat3("Position",
 				&m_camera.GetPosition()[0]);
+
+			// This section should be uncommented ONLY when using a stationary camera
+
 			//ImGui::DragFloat3("Rotation",
 			//	&stationaryRotation[0], 0, 0, 360);
 			//if (ImGui::Button("Set Rotation", 
@@ -376,13 +395,16 @@ void aieProject3D1App::ImGUIRefresher()
 			//{
 			//	m_camera.SetRotation(stationaryRotation);
 			//}
+
+			// This section should be commented ONLY when using a stationary camera
+
 			ImGui::DragFloat("Move Speed",
 				&m_camera.m_moveSpeed, 0.1, 0.1, 10);
 			ImGui::DragFloat("Sensitivity",
 				&m_camera.m_turnSpeed, 0.01, 0, 10);
 		}
 
-		if (ImGui::CollapsingHeader("Test2"))
+		if (ImGui::CollapsingHeader("Global Lighting"))
 		{
 			ImGui::DragFloat3("Global Light Direction",
 				&m_scene->GetLight().direction[0], 0.1, 0, 1);
@@ -509,6 +531,8 @@ void aieProject3D1App::ImGUIRefresher()
 			ImGui::InputInt("Processing Effect",
 				&m_ppEffect, 1);
 		}
+		m_scene->IMGuiScenePointlight(0, '1');
+		m_scene->IMGuiScenePointlight(1, '2');
 	}
 	ImGui::End();
 }

@@ -45,6 +45,8 @@ public:
 		m_pointLights.push_back(Light(direction, color, intensity)); 
 	}
 
+	void IMGuiScenePointlight(int lightIndex, char indexAsString);
+
 	FlyCamera* GetCamera() { return m_camera; }
 	glm::vec2 GetWindowSize() { return m_windowSize; }
 	glm::vec3 GetAmbientLightColor() { return m_ambientLightColor; }

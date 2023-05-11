@@ -1,0 +1,21 @@
+#
+#
+#
+
+newmtl R2D2
+illum 2
+Ka 0.500000 0.500000 0.500000
+Kd 0.800000 0.800000 0.800000
+Ks 0.800000 0.800000 0.800000
+Ns 20.000000
+map_Kd R2D2_Diffuse.jpg
+map_Ks R2D2_Specular.jpg
+bump R2D2_Normal.jpg
+
+newmtl Glass
+Kd 0 0 0
+Ke 0 0 0
+Ka 0 0 0
+Ks 0.3 0.3 0.3
+Ns 300
+Tr 0

@@ -87,6 +87,9 @@ protected:
 	aie::OBJMesh		m_spearMesh;
 	glm::mat4			m_spearTransform;
 
+	aie::OBJMesh		m_r2Mesh;
+	glm::mat4			m_r2Transform;
+
 	glm::vec3			m_ambientLight;
 
 	glm::vec2			m_mousePos;
