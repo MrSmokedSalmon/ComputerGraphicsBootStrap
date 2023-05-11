@@ -387,6 +387,9 @@ void aieProject3D1App::ImGUIRefresher()
 				&m_camera.GetPosition()[0]);
 
 			// This section should be uncommented ONLY when using a stationary camera
+			//-----------------------------------------------------------------------
+			//						THIS IS DONE ON PURPOSE
+			//-----------------------------------------------------------------------
 
 			//ImGui::DragFloat3("Rotation",
 			//	&stationaryRotation[0], 0, 0, 360);

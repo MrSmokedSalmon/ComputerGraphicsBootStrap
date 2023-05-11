@@ -25,11 +25,14 @@ void Scene::AddInstance(Instance* instance)
 
 void Scene::Draw()
 {
+	// Converts the point lights' info into float arrays so that the shader can read them
 	for (int i = 0; i < MAX_LIGHTS && i < m_pointLights.size(); i++)
 	{
 		m_pointLightPositions[i] = m_pointLights[i].direction;
 		m_pointLightColors[i] = m_pointLights[i].color;
 	}
+	
+	// Draws the scene
 
 	for (auto it = m_instances.begin(); 
 		it != m_instances.end(); it++)
@@ -41,6 +44,8 @@ void Scene::Draw()
 
 void Scene::DrawDepth(aie::ShaderProgram* shader)
 {
+	// Same as draw function but specifically used for the depth shader
+
 	for (int i = 0; i < MAX_LIGHTS && i < m_pointLights.size(); i++)
 	{
 		m_pointLightPositions[i] = m_pointLights[i].direction;
@@ -57,6 +62,8 @@ void Scene::DrawDepth(aie::ShaderProgram* shader)
 
 void Scene::IMGuiScenePointlight(int lightIndex, const char indexAsString)
 {
+	// Creates an IMGui interface for a point light
+
 	float* position[3] = { &m_pointLights[lightIndex].direction.x, &m_pointLights[lightIndex].direction.y, &m_pointLights[lightIndex].direction.z };
 	float* color[3] = { &m_pointLights[lightIndex].color.x, &m_pointLights[lightIndex].color.y, &m_pointLights[lightIndex].color.z };
 
